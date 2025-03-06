@@ -1,6 +1,8 @@
 #include <pybind11/pybind11.h>
-#include <pybind11/stl.h>  
-#include "include/clusters.h" 
+#include <pybind11/stl.h>
+
+#include "include/clusters.h"
+#include "include/helpers.h"
 
 PYBIND11_MODULE(flexoffer_logic, m) {
     pybind11::class_<TimeSlice>(m, "TimeSlice")
@@ -38,5 +40,18 @@ PYBIND11_MODULE(flexoffer_logic, m) {
           pybind11::arg("groups"), pybind11::arg("est_threshold"),
           pybind11::arg("lst_threshold"),
           pybind11::arg("max_group_size"));
+
+
+    m.def("start_alignment_aggregate", &start_alignment_aggregate,
+        "Perform start alignment aggregation for FlexOffers, handling min/max energy profiles.\n"
+        "Inputs:\n"
+        "  - min_profiles: list of min energy profiles (list of list of doubles)\n"
+        "  - max_profiles: list of max energy profiles (list of list of doubles)\n"
+        "  - earliest: list of earliest start times (ints)\n"
+        "  - latest: list of latest start times (ints)\n"
+        "  - offsets: list of offsets (ints)\n"
+        "Returns a dict with aggregated profiles and time window.",
+        py::arg("min_profiles"), py::arg("max_profiles"),
+        py::arg("earliest"), py::arg("latest"), py::arg("offsets"));
 }
 

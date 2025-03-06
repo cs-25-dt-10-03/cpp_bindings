@@ -10,3 +10,4 @@ flexoffer_logic.egg-info/top_level.txt
 src/clusters.cpp
 src/flexoffer.cpp
 src/groups.cpp
+src/helpers.cpp
