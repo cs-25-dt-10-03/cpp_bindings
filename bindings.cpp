@@ -4,6 +4,7 @@
 #include "include/clusters.h"
 #include "include/helpers.h"
 #include "include/DFO.h"
+#include "include/DFO_aggregation.h"
 
 PYBIND11_MODULE(flexoffer_logic, m) {
     pybind11::class_<TimeSlice>(m, "TimeSlice")
@@ -67,6 +68,16 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def_readwrite("polygons", &DFO::polygons)
         .def("generate_dependency_polygons", &DFO::generate_dependency_polygons)
         .def("__repr__", &DFO::to_string);
+
+    m.def("agg2to1", &DFO_Aggregation::agg2to1, "Aggregate two DFOs into one, accounting for different start times",
+        pybind11::arg("dfo1"), py::arg("dfo2"), py::arg("numsamples"));
+  
+    m.def("aggnto1", &DFO_Aggregation::aggnto1, "Aggregate multiple DFOs into one, accounting for different start times",
+        pybind11::arg("dfos"), py::arg("numsamples"));
+  
+    m.def("find_or_interpolate_points", &DFO_Aggregation::find_or_interpolate_points, 
+        "Finds or interpolate points for a given dependency value",
+        pybind11::arg("points"), py::arg("dependency_value"));
 
     pybind11::class_<Fo_Group>(m, "Fo_Group")
         .def(pybind11::init<int>()) 
