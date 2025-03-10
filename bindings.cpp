@@ -3,6 +3,7 @@
 
 #include "include/clusters.h"
 #include "include/helpers.h"
+#include "include/DFO.h"
 
 PYBIND11_MODULE(flexoffer_logic, m) {
     pybind11::class_<TimeSlice>(m, "TimeSlice")
@@ -32,6 +33,40 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("get_lst_hour", &Flexoffer::get_lst_hour)
         .def("get_et_hour", &Flexoffer::get_et_hour)
         .def("get_total_energy", &Flexoffer::get_total_energy);
+    
+    pybind11::class_<Point>(m, "Point")
+        .def(py::init<double, double>())
+        .def_readwrite("x", &Point::x)
+        .def_readwrite("y", &Point::y)
+        .def("__repr__", &Point::to_string);
+
+    pybind11::class_<DependencyPolygon>(m, "DependencyPolygon")
+        .def(py::init<double, double, int>())
+        .def_readwrite("min_prev_energy", &DependencyPolygon::min_prev_energy)
+        .def_readwrite("max_prev_energy", &DependencyPolygon::max_prev_energy)
+        .def_readwrite("numsamples", &DependencyPolygon::numsamples)
+        .def_readwrite("points", &DependencyPolygon::points)
+        .def("generate_polygon", &DependencyPolygon::generate_polygon)
+        .def("add_point", &DependencyPolygon::add_point)
+        .def("sort_points", &DependencyPolygon::sort_points)
+        .def("__repr__", &DependencyPolygon::to_string);
+
+    pybind11::class_<DFO>(m, "DFO")
+        .def(pybind11::init<int, const std::vector<double>&, const std::vector<double>&, 
+                      int, double, double, double, std::time_t>(),
+             pybind11::arg("dfo_id"), pybind11::arg("min_prev"), pybind11::arg("max_prev"),
+             pybind11::arg("numsamples") = 5, pybind11::arg("charging_power") = 7.3, 
+             pybind11::arg("min_total_energy") = -1, pybind11::arg("max_total_energy") = -1, 
+             pybind11::arg("earliest_start") = std::time(nullptr))
+        .def_readwrite("dfo_id", &DFO::dfo_id)
+        .def_readwrite("charging_power", &DFO::charging_power)
+        .def_readwrite("min_total_energy", &DFO::min_total_energy)
+        .def_readwrite("max_total_energy", &DFO::max_total_energy)
+        .def_readwrite("earliest_start", &DFO::earliest_start)
+        .def_readwrite("latest_start", &DFO::latest_start)
+        .def_readwrite("polygons", &DFO::polygons)
+        .def("generate_dependency_polygons", &DFO::generate_dependency_polygons)
+        .def("__repr__", &DFO::to_string);
 
     pybind11::class_<Fo_Group>(m, "Fo_Group")
         .def(pybind11::init<int>()) 
