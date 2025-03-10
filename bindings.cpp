@@ -21,6 +21,8 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("get_et", &Flexoffer::get_et)
         .def("get_duration", &Flexoffer::get_duration)
         .def("get_profile", &Flexoffer::get_profile)
+        .def("get_min_overall_alloc", &Flexoffer::get_min_overall_alloc)
+        .def("get_max_overall_alloc", &Flexoffer::get_max_overall_alloc)
         .def("get_scheduled_allocation", &Flexoffer::get_scheduled_allocation)
         .def("get_scheduled_start_time", &Flexoffer::get_scheduled_start_time)
         .def("set_scheduled_allocation", &Flexoffer::set_scheduled_allocation)
@@ -37,21 +39,14 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("addFlexOffer", &Fo_Group::addFlexOffer);
 
     m.def("clusterFo_Group", &clusterFo_Group, "Clusters a vector of Fo_Group",
-          pybind11::arg("groups"), pybind11::arg("est_threshold"),
-          pybind11::arg("lst_threshold"),
-          pybind11::arg("max_group_size"));
+        pybind11::arg("groups"), pybind11::arg("est_threshold"),
+        pybind11::arg("lst_threshold"),
+        pybind11::arg("max_group_size"));
 
+    m.def("set_time_resolution", &set_time_resolution, "set time resolution in c++ logic (should be equal to python)",
+        pybind11::arg("resolution"));
 
-    m.def("start_alignment_aggregate", &start_alignment_aggregate,
-        "Perform start alignment aggregation for FlexOffers, handling min/max energy profiles.\n"
-        "Inputs:\n"
-        "  - min_profiles: list of min energy profiles (list of list of doubles)\n"
-        "  - max_profiles: list of max energy profiles (list of list of doubles)\n"
-        "  - earliest: list of earliest start times (ints)\n"
-        "  - latest: list of latest start times (ints)\n"
-        "  - offsets: list of offsets (ints)\n"
-        "Returns a dict with aggregated profiles and time window.",
-        py::arg("min_profiles"), py::arg("max_profiles"),
-        py::arg("earliest"), py::arg("latest"), py::arg("offsets"));
+    m.def("start_alignment_aggregate", &start_alignment_aggregate, "Aggregate FlexOffers using start alignment.",
+        pybind11::arg("flex_offers"));
 }
 

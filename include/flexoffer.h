@@ -41,6 +41,8 @@ class Flexoffer{
         vector<TimeSlice> get_profile() const;
         vector<double> get_scheduled_allocation() const;
         time_t get_scheduled_start_time() const;
+        double get_min_overall_alloc() const;
+        double get_max_overall_alloc() const;
 
         // Setters
         void set_scheduled_allocation(std::vector<double>);

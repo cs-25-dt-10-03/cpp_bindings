@@ -1,7 +1,9 @@
 #include "../include/helpers.h"
+#include "../include/flexoffer.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
 
 #include <vector>
 #include <tuple>
@@ -13,94 +15,79 @@
 namespace py = pybind11;
 using namespace std;
 
+int TIME_RESOLUTION = 3600; //default
+void set_time_resolution(int resolution) { //Overwrite
+    if (resolution != 3600 && resolution != 900) {
+        throw invalid_argument("Invalid time resolution! Must be 60 min or 15 min");
+    }
+    TIME_RESOLUTION = resolution;
+}
 
-tuple<int, int> compute_aggregated_window(const vector<int>& earliest,
-                                               const vector<int>& latest) {
+tuple<int, int> compute_aggregated_window(const vector<Flexoffer>& flex_offers) {
 
-    int global_earliest = *min_element(earliest.begin(), earliest.end());
+    time_t global_earliest = numeric_limits<int>::max();
     int min_flex = numeric_limits<int>::max();
-    for (size_t i = 0; i < earliest.size(); i++) {
-        int flex = latest[i] - earliest[i];
+    
+    for (const auto& fo : flex_offers) {
+        time_t earliest = fo.get_est();
+        time_t latest = fo.get_lst();
+        int flex = latest - earliest;
+
+        if (earliest < global_earliest) {
+            global_earliest = earliest;
+        }
         if (flex < min_flex) {
             min_flex = flex;
         }
     }
+
     int aggregated_latest = global_earliest + min_flex;
     return make_tuple(global_earliest, aggregated_latest);
 }
 
-tuple<vector<double>, vector<double>> pad_profile(
-    const vector<double>& min_profile,
-    const vector<double>& max_profile,
-    int offset, int common_length) {
-    
-    vector<double> padded_min(common_length, 0.0);
-    vector<double> padded_max(common_length, 0.0);
+vector<int> compute_offsets_and_length(const vector<Flexoffer>& flex_offers, time_t global_earliest, int& common_length) {
+    vector<int> offsets;
+    offsets.reserve(flex_offers.size());
+    common_length = 0;
 
-    for (size_t i = 0; i < min_profile.size(); i++) {
-        int pos = offset + static_cast<int>(i);
-        if (pos < common_length) {
-            padded_min[pos] = min_profile[i];
-            padded_max[pos] = max_profile[i];
-        }
+    for (const auto& fo : flex_offers) {
+        int offset = static_cast<int>((fo.get_est() - global_earliest) / TIME_RESOLUTION);
+        offsets.push_back(offset);
+        common_length = max(common_length, offset + fo.get_duration());
     }
-    return make_tuple(padded_min, padded_max);
+
+    return offsets;
 }
 
-tuple<vector<double>, vector<double>> align_profiles(
-    const vector<vector<double>>& min_profiles,
-    const vector<vector<double>>& max_profiles,
-    const vector<int>& offsets) {
-    int min_offset = *min_element(offsets.begin(), offsets.end());
-    vector<int> norm_offsets;
-    norm_offsets.reserve(offsets.size());
-    for (int off : offsets) {
-        norm_offsets.push_back(off - min_offset);
-    }
+Flexoffer start_alignment_aggregate(const vector<Flexoffer>& flex_offers) {
 
-    int common_length = 0;
-    for (size_t i = 0; i < min_profiles.size(); i++) {
-        int length = norm_offsets[i] + static_cast<int>(min_profiles[i].size());
-        if (length > common_length) {
-            common_length = length;
+    time_t global_earliest, aggregated_latest;
+    tie(global_earliest, aggregated_latest) = compute_aggregated_window(flex_offers);
+
+    int common_length;
+    vector<int> offsets = compute_offsets_and_length(flex_offers, global_earliest, common_length);
+
+    vector<TimeSlice> aggregated_profile(common_length, TimeSlice(0.0, 0.0));
+
+    for (size_t i = 0; i < flex_offers.size(); i++) {
+        int offset = offsets[i];
+        const auto& profile = flex_offers[i].get_profile();
+
+        for (size_t j = 0; j < profile.size(); j++) {
+            int index = offset + j;
+            aggregated_profile[index].min_power += profile[j].min_power;
+            aggregated_profile[index].max_power += profile[j].max_power;
         }
     }
 
-    vector<double> aggregated_min(common_length, 0.0);
-    vector<double> aggregated_max(common_length, 0.0);
-
-    for (size_t i = 0; i < min_profiles.size(); i++) {
-        vector<double> padded_min, padded_max;
-        tie(padded_min, padded_max) = pad_profile(min_profiles[i], max_profiles[i], norm_offsets[i], common_length);
-
-        for (int j = 0; j < common_length; j++) {
-            aggregated_min[j] += padded_min[j];
-            aggregated_max[j] += padded_max[j];
-        }
-    }
-
-    return make_tuple(aggregated_min, aggregated_max);
-}
-
-py::dict start_alignment_aggregate(
-    const vector<vector<double>>& min_profiles,
-    const vector<vector<double>>& max_profiles,
-    const vector<int>& earliest,
-    const vector<int>& latest,
-    const vector<int>& offsets) {
-
-    int global_earliest, aggregated_latest;
-    tie(global_earliest, aggregated_latest) = compute_aggregated_window(earliest, latest);
-    
-    vector<double> aggregated_min, aggregated_max;
-    tie(aggregated_min, aggregated_max) = align_profiles(min_profiles, max_profiles, offsets);
-
-    py::dict result;
-    result["aggregated_min"] = aggregated_min;
-    result["aggregated_max"] = aggregated_max;
-    result["global_earliest"] = global_earliest;
-    result["aggregated_latest"] = aggregated_latest;
-    result["common_length"] = static_cast<int>(aggregated_min.size());
-
-    return result;
+    return Flexoffer(
+        -1,
+        global_earliest,
+        aggregated_latest,
+        aggregated_latest,
+        aggregated_profile,
+        common_length,
+        0.0,
+        0.0
+    );
 }

@@ -36,6 +36,8 @@ int Flexoffer::get_duration() const {return duration;};
 vector<TimeSlice> Flexoffer::get_profile() const {return profile;};
 vector<double> Flexoffer::get_scheduled_allocation() const {return scheduled_allocation;};
 time_t Flexoffer::get_scheduled_start_time() const {return scheduled_start_time;};
+double Flexoffer::get_min_overall_alloc() const {return min_overall_alloc;};
+double Flexoffer::get_max_overall_alloc() const {return max_overall_alloc;};
 
 //Setters
 void Flexoffer::set_scheduled_allocation(vector<double> new_sa) {scheduled_allocation = new_sa;};

@@ -59,6 +59,7 @@
   "files.associations": {
     "vector": "cpp",
     "tuple": "cpp",
-    "string": "cpp"
+    "string": "cpp",
+    "limits": "cpp"
   }
 }
