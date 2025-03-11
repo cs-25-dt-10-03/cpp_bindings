@@ -1,5 +1,6 @@
 #include "../include/helpers.h"
 #include "../include/flexoffer.h"
+#include "../include/config.h"
 
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
@@ -14,14 +15,6 @@
 
 namespace py = pybind11;
 using namespace std;
-
-int TIME_RESOLUTION = 3600; //default
-void set_time_resolution(int resolution) { //Overwrite
-    if (resolution != 3600 && resolution != 900) {
-        throw invalid_argument("Invalid time resolution! Must be 60 min or 15 min");
-    }
-    TIME_RESOLUTION = resolution;
-}
 
 tuple<int, int> compute_aggregated_window(const vector<Flexoffer>& flex_offers) {
 

@@ -1,4 +1,5 @@
 #include "../include/flexoffer.h"
+#include "../include/config.h"
 
 #include <iostream>
 #include <iomanip>
@@ -103,7 +104,7 @@ double Flexoffer::get_total_energy() const {
 vector<time_t> Flexoffer::get_allowed_start_times() const {
     vector<time_t> start_times;
     
-    for (time_t t = earliest_start_time; t <= latest_start_time; t += 3600) {
+    for (time_t t = earliest_start_time; t <= latest_start_time; t += TIME_RESOLUTION) {
         start_times.push_back(t);
     }
     

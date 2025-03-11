@@ -4,6 +4,7 @@
 #include "include/clusters.h"
 #include "include/helpers.h"
 #include "include/DFO.h"
+#include "include/config.h"
 #include "include/DFO_aggregation.h"
 
 PYBIND11_MODULE(flexoffer_logic, m) {
@@ -90,10 +91,11 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         pybind11::arg("lst_threshold"),
         pybind11::arg("max_group_size"));
 
-    m.def("set_time_resolution", &set_time_resolution, "set time resolution in c++ logic (should be equal to python)",
-        pybind11::arg("resolution"));
-
     m.def("start_alignment_aggregate", &start_alignment_aggregate, "Aggregate FlexOffers using start alignment.",
         pybind11::arg("flex_offers"));
+
+    m.attr("TIME_RESOLUTION") = TIME_RESOLUTION;
+    m.def("reload_config", &loadConfig, "Reload configuration from config.json");
+    
 }
 
