@@ -6,6 +6,7 @@
 #include "include/DFO.h"
 #include "include/config.h"
 #include "include/DFO_aggregation.h"
+#include "include/DFO_disaggregation.h"
 
 PYBIND11_MODULE(flexoffer_logic, m) {
     pybind11::class_<TimeSlice>(m, "TimeSlice")
@@ -72,14 +73,20 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("__repr__", &DFO::to_string);
 
     m.def("agg2to1", &DFO_Aggregation::agg2to1, "Aggregate two DFOs into one, accounting for different start times",
-        pybind11::arg("dfo1"), py::arg("dfo2"), py::arg("numsamples"));
+        pybind11::arg("dfo1"), pybind11::arg("dfo2"), pybind11::arg("numsamples"));
   
     m.def("aggnto1", &DFO_Aggregation::aggnto1, "Aggregate multiple DFOs into one, accounting for different start times",
-        pybind11::arg("dfos"), py::arg("numsamples"));
+        pybind11::arg("dfos"), pybind11::arg("numsamples"));
   
     m.def("findOrInterpolatePoints", &DFO_Aggregation::findOrInterpolatePoints, 
         "Finds or interpolate points for a given dependency value",
-        pybind11::arg("points"), py::arg("dependency_value"));
+        pybind11::arg("points"), pybind11::arg("dependency_value"));
+
+    m.def("disagg1to2", &DFO_disaggregation::disagg1to2, "Disaggregate a single aggregated DFO into two",
+        pybind11::arg("D1"), pybind11::arg("D2"), pybind11::arg("DA"), pybind11::arg("yA_ref"));
+      
+    m.def("disagg1toN", &DFO_disaggregation::disagg1toN, "Disaggregate a single aggregated DFO into multiple DFOs",
+        pybind11::arg("DA"), pybind11::arg("DFOs"), pybind11::arg("yA_ref"));
 
     pybind11::class_<Fo_Group>(m, "Fo_Group")
         .def(pybind11::init<int>()) 
