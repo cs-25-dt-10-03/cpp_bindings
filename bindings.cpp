@@ -33,7 +33,8 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("get_est_hour", &Flexoffer::get_est_hour)
         .def("get_lst_hour", &Flexoffer::get_lst_hour)
         .def("get_et_hour", &Flexoffer::get_et_hour)
-        .def("get_total_energy", &Flexoffer::get_total_energy);
+        .def("get_total_energy", &Flexoffer::get_total_energy)
+        .def("get_allowed_start_times", &Flexoffer::get_allowed_start_times);
     
     pybind11::class_<Point>(m, "Point")
         .def(py::init<double, double>())
@@ -75,7 +76,7 @@ PYBIND11_MODULE(flexoffer_logic, m) {
     m.def("aggnto1", &DFO_Aggregation::aggnto1, "Aggregate multiple DFOs into one, accounting for different start times",
         pybind11::arg("dfos"), py::arg("numsamples"));
   
-    m.def("find_or_interpolate_points", &DFO_Aggregation::find_or_interpolate_points, 
+    m.def("findOrInterpolatePoints", &DFO_Aggregation::findOrInterpolatePoints, 
         "Finds or interpolate points for a given dependency value",
         pybind11::arg("points"), py::arg("dependency_value"));
 

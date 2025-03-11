@@ -43,6 +43,7 @@ class Flexoffer{
         time_t get_scheduled_start_time() const;
         double get_min_overall_alloc() const;
         double get_max_overall_alloc() const;
+        vector<time_t> get_allowed_start_times() const;
 
         // Setters
         void set_scheduled_allocation(std::vector<double>);

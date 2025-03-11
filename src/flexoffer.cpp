@@ -100,4 +100,12 @@ double Flexoffer::get_total_energy() const {
     return total_energy;
 }
 
-
+vector<time_t> Flexoffer::get_allowed_start_times() const {
+    vector<time_t> start_times;
+    
+    for (time_t t = earliest_start_time; t <= latest_start_time; t += 3600) {
+        start_times.push_back(t);
+    }
+    
+    return start_times;
+}
