@@ -1,5 +1,6 @@
 #include "../include/DFO_disaggregation.h"
 #include <algorithm>
+#include <cstddef>
 #include <stdexcept>
 #include <iostream>
 
@@ -34,7 +35,8 @@ pair<vector<double>, vector<double>> DFO_disaggregation::disagg1to2(
     // Determine overlapping region
     int overlap_start = max(offset_1, offset_2);
     int overlap_end = min(static_cast<int>(D1.polygons.size() + offset_1),
-                               static_cast<int>(D2.polygons.size() + offset_2), static_cast<int>(T));
+                          min(static_cast<int>(D2.polygons.size() + offset_2),
+                              static_cast<int>(T)));
 
     // Initialize output vectors
     vector<double> y1_ref(D1.polygons.size(), 0.0);
@@ -146,7 +148,7 @@ vector<vector<double>> DFO_disaggregation::disagg1toN(
         // Determine which DFOs are active at this timestep
         vector<int> active_dfo_indices;
         for (size_t j = 0; j < N; j++) {
-            if (offsets[j] <= i && i < end_times[j]) {
+            if (static_cast<size_t>(offsets[j]) <= i && i < static_cast<size_t>(end_times[j])) {
                 active_dfo_indices.push_back(j);
             }
         }
