@@ -62,6 +62,9 @@ Flexoffer start_alignment_aggregate(const vector<Flexoffer>& flex_offers) {
 
     vector<TimeSlice> aggregated_profile(common_length, TimeSlice(0.0, 0.0));
 
+    double agg_total_max = 0;
+    double agg_total_min = 0;
+
     for (size_t i = 0; i < flex_offers.size(); i++) {
         int offset = offsets[i];
         const auto& profile = flex_offers[i].get_profile();
@@ -71,6 +74,9 @@ Flexoffer start_alignment_aggregate(const vector<Flexoffer>& flex_offers) {
             aggregated_profile[index].min_power += profile[j].min_power;
             aggregated_profile[index].max_power += profile[j].max_power;
         }
+        
+        agg_total_min += flex_offers[i].get_min_overall_alloc();
+        agg_total_max += flex_offers[i].get_max_overall_alloc();
     }
 
     return Flexoffer(
@@ -80,7 +86,7 @@ Flexoffer start_alignment_aggregate(const vector<Flexoffer>& flex_offers) {
         aggregated_latest,
         aggregated_profile,
         common_length,
-        0.0,
-        0.0
+        agg_total_min,
+        agg_total_max
     );
 }

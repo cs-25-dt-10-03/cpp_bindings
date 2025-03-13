@@ -73,6 +73,10 @@ void Flexoffer::print_flexoffer() {
         cout << "  Hour " << i << " (" << to_readable(t) << "): "
              << "Power=" << scheduled_allocation[i] << " kW" << endl;
     }
+    if (min_overall_alloc > 0) {
+        cout << "Min total: " << min_overall_alloc << " " << "max total: " << max_overall_alloc << endl;  
+    }
+
     cout << "==========================" << endl;
 }
 
