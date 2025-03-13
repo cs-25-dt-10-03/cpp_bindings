@@ -1,1 +1,6 @@
 .vscode/
+build/
+*.pyd
+*.so
+*.egg-info
+sources.txt
