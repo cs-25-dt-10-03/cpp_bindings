@@ -135,8 +135,12 @@ vector<vector<double>> DFO_disaggregation::disagg1toN(
         end_times[i] = offsets[i] + static_cast<int>(DFOs[i].polygons.size());
     }
 
-    // Initialize output lists
-    vector<vector<double>> y_refs(N, vector<double>(T, 0.0));
+    // Initialize output lists with the correct size for each DFO
+    vector<vector<double>> y_refs;
+    y_refs.reserve(N);
+    for (size_t i = 0; i < N; i++) {
+        y_refs.emplace_back(vector<double>(DFOs[i].polygons.size(), 0.0));
+    }
 
     // Initialize dependency tracking
     vector<double> d(N, 0.0); // Dependency amounts for each DFO
