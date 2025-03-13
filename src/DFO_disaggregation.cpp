@@ -3,8 +3,10 @@
 #include <cstddef>
 #include <stdexcept>
 #include <iostream>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 /*
 Disaggregates a single aggregated DFO (DA) into two original DFOs (D1 and D2), accounting for start time offsets.
@@ -29,14 +31,14 @@ pair<vector<double>, vector<double>> DFO_disaggregation::disagg1to2(
 
     // Determine offsets in start time
     time_t start_time = min(D1.earliest_start, D2.earliest_start);
-    int offset_1 = (D1.earliest_start - start_time) / 3600;
-    int offset_2 = (D2.earliest_start - start_time) / 3600;
+    int offset_1 = static_cast<int>(duration_cast<hours>(seconds(D1.earliest_start - start_time)).count());
+    int offset_2 = static_cast<int>(duration_cast<hours>(seconds(D2.earliest_start - start_time)).count());
 
     // Determine overlapping region
     int overlap_start = max(offset_1, offset_2);
-    int overlap_end = min(static_cast<int>(D1.polygons.size() + offset_1),
-                          min(static_cast<int>(D2.polygons.size() + offset_2),
-                              static_cast<int>(T)));
+    int overlap_end = min({static_cast<int>(D1.polygons.size() + offset_1),
+                           static_cast<int>(D2.polygons.size() + offset_2),
+                           static_cast<int>(T)});
 
     // Initialize output vectors
     vector<double> y1_ref(D1.polygons.size(), 0.0);
@@ -129,8 +131,8 @@ vector<vector<double>> DFO_disaggregation::disagg1toN(
     vector<int> offsets(N);
     vector<int> end_times(N);
     for (size_t i = 0; i < N; i++) {
-        offsets[i] = (DFOs[i].earliest_start - start_time) / 3600;
-        end_times[i] = offsets[i] + DFOs[i].polygons.size();
+        offsets[i] = static_cast<int>((DFOs[i].earliest_start - start_time) / 3600);
+        end_times[i] = offsets[i] + static_cast<int>(DFOs[i].polygons.size());
     }
 
     // Initialize output lists
