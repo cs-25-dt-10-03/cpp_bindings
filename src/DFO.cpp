@@ -1,3 +1,4 @@
+#include "../include/config.h"
 #include "../include/DFO.h"
 #include <iostream>
 #include <iomanip>
@@ -91,16 +92,24 @@ DFO::DFO(int dfo_id, const vector<double>& min_prev, const vector<double>& max_p
          int numsamples, double charging_power, double min_total_energy, double max_total_energy, time_t earliest_start)
     : dfo_id(dfo_id), charging_power(charging_power), earliest_start(earliest_start), latest_start(earliest_start) {
 
+        
     if (min_prev.empty() || max_prev.empty()) {
         throw runtime_error("min_prev and max_prev cannot be empty.");
     }
-
+    
     for (size_t i = 0; i < min_prev.size(); ++i) {
         polygons.emplace_back(min_prev[i], max_prev[i], numsamples);
     }
 
+
+    this->end_time = this->earliest_start + static_cast<time_t>(polygons.size()) * TIME_RESOLUTION;
+
     this->min_total_energy = (min_total_energy == -1) ? min_prev.back() : min_total_energy;
     this->max_total_energy = (max_total_energy == -1) ? max_prev.back() : max_total_energy;
+
+    // double required_charging_time = min_total_energy / charging_power;
+    // int required_time_slots = ceil(required_charging_time * (3600 / TIME_RESOLUTION));
+    // this->latest_start = this->end_time - required_time_slots * TIME_RESOLUTION;
 }
 
 void DFO::generate_dependency_polygons() {
@@ -132,4 +141,31 @@ string DFO::to_string() const {
 ostream& operator<<(ostream& os, const DFO& dfo) {
     os << dfo.to_string();
     return os;
+}
+
+void DFO::calculate_latest_start_time() {
+    latest_start = earliest_start;
+    for (const auto& polygon : polygons) {
+        if (polygon.points.front().y == 0) {
+            latest_start += 3600;
+        } else {
+            break;
+        }
+    }
+}
+
+// Additional methods
+int DFO::get_est_hour() const {
+    struct tm* timeinfo = localtime(&earliest_start);
+    return timeinfo->tm_hour;
+}
+
+int DFO::get_lst_hour() const {
+    struct tm* timeinfo = localtime(&latest_start);
+    return timeinfo->tm_hour;
+}
+
+int DFO::get_et_hour() const {
+    struct tm* timeinfo = localtime(&end_time);
+    return timeinfo->tm_hour;
 }

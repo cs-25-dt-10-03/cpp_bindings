@@ -70,6 +70,10 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def_readwrite("latest_start", &DFO::latest_start)
         .def_readwrite("polygons", &DFO::polygons)
         .def("generate_dependency_polygons", &DFO::generate_dependency_polygons)
+        .def("calculate_latest_start_time", &DFO::calculate_latest_start_time)
+        .def("get_est_hour", &DFO::get_est_hour)
+        .def("get_lst_hour", &DFO::get_lst_hour)
+        .def("get_et_hour", &DFO::get_et_hour)
         .def("__repr__", &DFO::to_string);
 
     m.def("agg2to1", &DFO_Aggregation::agg2to1, "Aggregate two DFOs into one, accounting for different start times",
