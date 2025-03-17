@@ -166,6 +166,7 @@ DFO DFO_Aggregation::agg2to1(const DFO& dfo1, const DFO& dfo2, int numsamples) {
 
     DFO aggregated_DFO = DFO(-1, {0}, {0}, numsamples, 0.0, -1, -1, start_time);
     aggregated_DFO.polygons = aggregated_polygons;
+    aggregated_DFO.calculate_latest_start_time();
     return aggregated_DFO;
 }
 

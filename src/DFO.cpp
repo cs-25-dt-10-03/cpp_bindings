@@ -107,9 +107,11 @@ DFO::DFO(int dfo_id, const vector<double>& min_prev, const vector<double>& max_p
     this->min_total_energy = (min_total_energy == -1) ? min_prev.back() : min_total_energy;
     this->max_total_energy = (max_total_energy == -1) ? max_prev.back() : max_total_energy;
 
-    // double required_charging_time = min_total_energy / charging_power;
-    // int required_time_slots = ceil(required_charging_time * (3600 / TIME_RESOLUTION));
-    // this->latest_start = this->end_time - required_time_slots * TIME_RESOLUTION;
+    if (charging_power != 0.0) {
+        double required_charging_time = min_total_energy / charging_power;
+        int required_time_slots = ceil(required_charging_time * (3600 / TIME_RESOLUTION));
+        this->latest_start = this->end_time - required_time_slots * TIME_RESOLUTION;
+    }
 }
 
 void DFO::generate_dependency_polygons() {
