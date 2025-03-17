@@ -2,6 +2,7 @@
 #include <iostream>
 #include <limits>
 #include <stdexcept>
+#include <cmath>
 
 using namespace std;
 
@@ -77,6 +78,10 @@ vector<Point> DFO_Aggregation::findOrInterpolatePoints(const vector<Point>& poin
         if (dependency_value >= prev_min.x && dependency_value <= next_min.x) {
             double s_min = linearInterpolation(dependency_value, prev_min.x, prev_min.y, next_min.x, next_min.y);
             double s_max = linearInterpolation(dependency_value, prev_max.x, prev_max.y, next_max.x, next_max.y);
+            double tolerance = 1e-4;
+            if (abs(s_max) < tolerance) { // s_max is considered to be close enough to 0.0
+                s_min = max((prev_min.x + prev_min.y) - dependency_value, 0.0);
+            }
             return { Point(dependency_value, s_min), Point(dependency_value, s_max) };
         }
     }
