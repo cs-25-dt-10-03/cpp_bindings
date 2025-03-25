@@ -9,11 +9,8 @@
 #include <vector>
 #include <tuple>
 #include <algorithm>
-#include <stdexcept>
-#include <string>
 #include <limits>
 
-namespace py = pybind11;
 using namespace std;
 
 tuple<int, int> compute_aggregated_window(const vector<Flexoffer>& flex_offers) {
