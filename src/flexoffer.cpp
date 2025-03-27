@@ -1,6 +1,7 @@
 #include "../include/flexoffer.h"
 #include "../include/config.h"
 
+#include <tuple>
 #include <iostream>
 #include <iomanip>
 
@@ -39,6 +40,7 @@ vector<double> Flexoffer::get_scheduled_allocation() const {return scheduled_all
 time_t Flexoffer::get_scheduled_start_time() const {return scheduled_start_time;};
 double Flexoffer::get_min_overall_alloc() const {return min_overall_alloc;};
 double Flexoffer::get_max_overall_alloc() const {return max_overall_alloc;};
+
 
 //Setters
 void Flexoffer::set_scheduled_allocation(vector<double> new_sa) {scheduled_allocation = new_sa;};
@@ -113,4 +115,38 @@ vector<time_t> Flexoffer::get_allowed_start_times() const {
     }
     
     return start_times;
+}
+
+inline double compute_total_flex(const Flexoffer& fo) {
+    double time_flex = static_cast<double>(fo.get_lst() - fo.get_est());
+    double amount_flex = 0.0;
+    for (const auto& s : fo.get_profile())
+        amount_flex += (s.max_power - s.min_power);
+    return time_flex * amount_flex;
+}
+
+// Compute the absolute balance of a Flexoffer.
+// Here defined as the sum over time slices of the absolute average power.
+inline double abs_balance(const Flexoffer& fo) {
+    double total = 0.0;
+    for (const auto& s : fo.get_profile()) {
+        double avg = 0.5 * (s.min_power + s.max_power);
+        total += fabs(avg);
+    }
+    return total;
+}
+
+// Helper: return the index of the least flexible unused Flexoffer.
+inline int get_least_flexible_index(const vector<Flexoffer>& flex_offers, const vector<bool>& used) {
+    int min_index = -1;
+    double min_total_flex = numeric_limits<double>::max();
+    for (size_t i = 0; i < flex_offers.size(); ++i) {
+        if (used[i]) continue;
+        double tf = compute_total_flex(flex_offers[i]);
+        if (tf < min_total_flex) {
+            min_total_flex = tf;
+            min_index = static_cast<int>(i);
+        }
+    }
+    return min_index;
 }

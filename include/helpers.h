@@ -2,8 +2,7 @@
 #define HELPERS_H
 
 #include "flexoffer.h"
-
-#include <pybind11/pybind11.h>
+#include "config.h"
 #include <vector>
 #include <tuple>
 #include <algorithm>
@@ -11,12 +10,11 @@
 #include <stdexcept>
 #include <limits>
 
-namespace py = pybind11;
-using namespace std;
-
-void set_time_resolution(int);
 tuple<int, int> compute_aggregated_window(const vector<Flexoffer>&);
-vector<int> compute_offsets_and_length(const vector<Flexoffer>&, int, int&);
-Flexoffer start_alignment_aggregate(const vector<Flexoffer>&);
+vector<int> compute_offsets_and_length(const vector<Flexoffer>&, time_t, int&);
+inline double compute_total_flex(const Flexoffer&);
+inline double abs_balance(const Flexoffer&);
+inline int get_least_flexible_index(const vector<Flexoffer>&, const vector<bool>&);
+Flexoffer aggregate_two(const Flexoffer&, const Flexoffer&, int);
 
 #endif

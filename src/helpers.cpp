@@ -2,10 +2,6 @@
 #include "../include/flexoffer.h"
 #include "../include/config.h"
 
-#include <pybind11/pybind11.h>
-#include <pybind11/stl.h>
-
-
 #include <vector>
 #include <tuple>
 #include <algorithm>
@@ -49,41 +45,68 @@ vector<int> compute_offsets_and_length(const vector<Flexoffer>& flex_offers, tim
     return offsets;
 }
 
-Flexoffer start_alignment_aggregate(const vector<Flexoffer>& flex_offers) {
-
-    time_t global_earliest, aggregated_latest;
-    tie(global_earliest, aggregated_latest) = compute_aggregated_window(flex_offers);
-
-    int common_length;
-    vector<int> offsets = compute_offsets_and_length(flex_offers, global_earliest, common_length);
-
-    vector<TimeSlice> aggregated_profile(common_length, TimeSlice(0.0, 0.0));
-
-    double agg_total_max = 0;
-    double agg_total_min = 0;
-
-    for (size_t i = 0; i < flex_offers.size(); i++) {
-        int offset = offsets[i];
-        const auto& profile = flex_offers[i].get_profile();
-
-        for (size_t j = 0; j < profile.size(); j++) {
-            int index = offset + j;
-            aggregated_profile[index].min_power += profile[j].min_power;
-            aggregated_profile[index].max_power += profile[j].max_power;
-        }
-        
-        agg_total_min += flex_offers[i].get_min_overall_alloc();
-        agg_total_max += flex_offers[i].get_max_overall_alloc();
+inline double compute_total_flex(const Flexoffer& fo) {
+    double time_flex = static_cast<double>(fo.get_lst() - fo.get_est());
+    double amount_flex = 0.0;
+    for (const auto& s : fo.get_profile()) {
+        amount_flex += (s.max_power - s.min_power);
     }
+    return time_flex * amount_flex;
+}
 
-    return Flexoffer(
-        -1,
-        global_earliest,
-        aggregated_latest,
-        aggregated_latest,
-        aggregated_profile,
-        common_length,
-        agg_total_min,
-        agg_total_max
-    );
+
+inline double abs_balance(const Flexoffer& fo) {
+    double total = 0.0;
+    for (const auto& s : fo.get_profile()) {
+        double avg = 0.5 * (s.min_power + s.max_power);
+        total += fabs(avg);
+    }
+    return total;
+}
+
+inline int get_least_flexible_index(const vector<Flexoffer>& flex_offers, const vector<bool>& used) {
+    int min_index = -1;
+    double min_total_flex = numeric_limits<double>::max();
+    for (size_t i = 0; i < flex_offers.size(); ++i) {
+        if (used[i]) continue;
+        double tf = compute_total_flex(flex_offers[i]);
+        if (tf < min_total_flex) {
+            min_total_flex = tf;
+            min_index = static_cast<int>(i);
+        }
+    }
+    return min_index;
+}
+
+
+Flexoffer aggregate_two(const Flexoffer& a, const Flexoffer& b, int offset) {
+    // New aggregate length is the maximum of a's length and (offset + b's length)
+    int new_length = max(a.get_duration(), offset + b.get_duration());
+    vector<TimeSlice> new_profile(new_length, TimeSlice(0.0, 0.0));
+
+    // Add profile of 'a'
+    const auto& profA = a.get_profile();
+    for (size_t i = 0; i < profA.size(); ++i) {
+        new_profile[i].min_power += profA[i].min_power;
+        new_profile[i].max_power += profA[i].max_power;
+    }
+    // Add profile of 'b', shifted by offset
+    const auto& profB = b.get_profile();
+    for (size_t i = 0; i < profB.size(); ++i) {
+        int pos = offset + static_cast<int>(i);
+        if (pos < new_length) {
+            new_profile[pos].min_power += profB[i].min_power;
+            new_profile[pos].max_power += profB[i].max_power;
+        }
+    }
+    
+    // New aggregate retains the original start time.
+    time_t new_start = a.get_est();
+    time_t new_end = new_start + new_length * TIME_RESOLUTION;
+    
+    // Combine overall allocations.
+    double new_min_alloc = a.get_min_overall_alloc() + b.get_min_overall_alloc();
+    double new_max_alloc = a.get_max_overall_alloc() + b.get_max_overall_alloc();
+    
+    return Flexoffer(-1, new_start, new_end, new_end, new_profile, new_length, new_min_alloc, new_max_alloc);
 }

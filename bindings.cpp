@@ -2,6 +2,7 @@
 #include <pybind11/stl.h>
 
 #include "include/clusters.h"
+#include "include/alignments.h"
 #include "include/helpers.h"
 #include "include/DFO.h"
 #include "include/config.h"
@@ -39,13 +40,13 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("get_allowed_start_times", &Flexoffer::get_allowed_start_times);
     
     pybind11::class_<Point>(m, "Point")
-        .def(py::init<double, double>())
+        .def(pybind11::init<double, double>())
         .def_readwrite("x", &Point::x)
         .def_readwrite("y", &Point::y)
         .def("__repr__", &Point::to_string);
 
     pybind11::class_<DependencyPolygon>(m, "DependencyPolygon")
-        .def(py::init<double, double, int>())
+        .def(pybind11::init<double, double, int>())
         .def_readwrite("min_prev_energy", &DependencyPolygon::min_prev_energy)
         .def_readwrite("max_prev_energy", &DependencyPolygon::max_prev_energy)
         .def_readwrite("numsamples", &DependencyPolygon::numsamples)

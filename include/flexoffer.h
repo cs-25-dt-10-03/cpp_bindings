@@ -3,6 +3,7 @@
 
 #include <ctime>
 #include <vector>
+#include <tuple>
 
 using namespace std;
 
@@ -44,7 +45,7 @@ class Flexoffer{
         double get_min_overall_alloc() const;
         double get_max_overall_alloc() const;
         vector<time_t> get_allowed_start_times() const;
-
+        
         // Setters
         void set_scheduled_allocation(std::vector<double>);
         void set_scheduled_start_time(time_t);
