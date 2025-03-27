@@ -9,7 +9,7 @@ using json = nlohmann::json;
 int TIME_RESOLUTION = 3600; //fallback to 1 hour
 
 void loadConfig() {
-    const string path = "../master-thesis/config.json";
+    const string path = "../master_thesis/config.json";
     ifstream file(path);
     if (!file) {
         std::cerr << "Error: Could not open " << path << std::endl;
