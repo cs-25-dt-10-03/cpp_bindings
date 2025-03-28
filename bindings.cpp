@@ -105,6 +105,11 @@ PYBIND11_MODULE(flexoffer_logic, m) {
 
     m.def("start_alignment_aggregate", &start_alignment_aggregate, "Aggregate FlexOffers using start alignment.",
         pybind11::arg("flex_offers"));
+    
+    m.def("balance_alignment_aggregate", &balance_alignment_aggregate, "Aggregate FlexOffers using balance alignment.",
+        pybind11::arg("flex_offers"), 
+        pybind11::arg("num_candidates"));
+
 
     m.attr("TIME_RESOLUTION") = TIME_RESOLUTION;
     m.def("reload_config", &loadConfig, "Reload configuration from config.json");

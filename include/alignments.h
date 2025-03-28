@@ -14,6 +14,9 @@
 
 
 Flexoffer start_alignment_aggregate(const vector<Flexoffer>&);
+Flexoffer balance_alignment_aggregate(const vector<Flexoffer>&, int num_candidates);
+
+
 
 
 #endif

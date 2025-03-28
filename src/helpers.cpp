@@ -45,7 +45,7 @@ vector<int> compute_offsets_and_length(const vector<Flexoffer>& flex_offers, tim
     return offsets;
 }
 
-inline double compute_total_flex(const Flexoffer& fo) {
+double compute_total_flex(const Flexoffer& fo) {
     double time_flex = static_cast<double>(fo.get_lst() - fo.get_est());
     double amount_flex = 0.0;
     for (const auto& s : fo.get_profile()) {
@@ -55,7 +55,7 @@ inline double compute_total_flex(const Flexoffer& fo) {
 }
 
 
-inline double abs_balance(const Flexoffer& fo) {
+double abs_balance(const Flexoffer& fo) {
     double total = 0.0;
     for (const auto& s : fo.get_profile()) {
         double avg = 0.5 * (s.min_power + s.max_power);
@@ -64,7 +64,7 @@ inline double abs_balance(const Flexoffer& fo) {
     return total;
 }
 
-inline int get_least_flexible_index(const vector<Flexoffer>& flex_offers, const vector<bool>& used) {
+int get_least_flexible_index(const vector<Flexoffer>& flex_offers, const vector<bool>& used) {
     int min_index = -1;
     double min_total_flex = numeric_limits<double>::max();
     for (size_t i = 0; i < flex_offers.size(); ++i) {
