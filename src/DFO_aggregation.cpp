@@ -92,11 +92,11 @@ vector<Point> DFO_Aggregation::findOrInterpolatePoints(const vector<Point>& poin
 DFO DFO_Aggregation::agg2to1(const DFO& dfo1, const DFO& dfo2, int numsamples) {
 
     // Determine the earliest start time
-    time_t start_time = min(dfo1.earliest_start, dfo2.earliest_start);
+    time_t start_time = min(dfo1.earliest_start_time, dfo2.earliest_start_time);
 
     // Compute how many padding polygons are needed at the start for each DFO
-    int pad_start_1 = static_cast<int>((dfo1.earliest_start - start_time) / 3600);
-    int pad_start_2 = static_cast<int>((dfo2.earliest_start - start_time) / 3600);
+    int pad_start_1 = static_cast<int>((dfo1.earliest_start_time - start_time) / 3600);
+    int pad_start_2 = static_cast<int>((dfo2.earliest_start_time - start_time) / 3600);
 
     // Compute how many padding polygons are needed at the end for each DFO
     int max_length = max(dfo1.polygons.size() + pad_start_1, dfo2.polygons.size() + pad_start_2);

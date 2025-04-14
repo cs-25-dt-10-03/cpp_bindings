@@ -62,19 +62,23 @@ PYBIND11_MODULE(flexoffer_logic, m) {
              pybind11::arg("dfo_id"), pybind11::arg("min_prev"), pybind11::arg("max_prev"),
              pybind11::arg("numsamples") = 5, pybind11::arg("charging_power") = 7.3, 
              pybind11::arg("min_total_energy") = -1, pybind11::arg("max_total_energy") = -1, 
-             pybind11::arg("earliest_start") = std::time(nullptr))
+             pybind11::arg("earliest_start_time") = std::time(nullptr))
         .def_readwrite("dfo_id", &DFO::dfo_id)
         .def_readwrite("charging_power", &DFO::charging_power)
         .def_readwrite("min_total_energy", &DFO::min_total_energy)
         .def_readwrite("max_total_energy", &DFO::max_total_energy)
-        .def_readwrite("earliest_start", &DFO::earliest_start)
-        .def_readwrite("latest_start", &DFO::latest_start)
+        .def_readwrite("earliest_start_time", &DFO::earliest_start_time)
+        .def_readwrite("latest_start_time", &DFO::latest_start_time)
+        .def_readwrite("end_time", &DFO::end_time)
         .def_readwrite("polygons", &DFO::polygons)
         .def("generate_dependency_polygons", &DFO::generate_dependency_polygons)
         .def("calculate_latest_start_time", &DFO::calculate_latest_start_time)
         .def("get_est_hour", &DFO::get_est_hour)
         .def("get_lst_hour", &DFO::get_lst_hour)
         .def("get_et_hour", &DFO::get_et_hour)
+        .def("get_est", &DFO::get_est)
+        .def("get_lst", &DFO::get_lst)
+        .def("get_et", &DFO::get_et)
         .def("__repr__", &DFO::to_string);
 
     m.def("agg2to1", &DFO_Aggregation::agg2to1, "Aggregate two DFOs into one, accounting for different start times",

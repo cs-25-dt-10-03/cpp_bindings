@@ -44,12 +44,12 @@ public:
     double charging_power;
     double min_total_energy;
     double max_total_energy;
-    time_t earliest_start;
+    time_t earliest_start_time;
     time_t end_time;
-    time_t latest_start;
+    time_t latest_start_time;
 
     DFO(int dfo_id, const vector<double>& min_prev, const vector<double>& max_prev, 
-        int numsamples = 5, double charging_power = 7.3, double min_total_energy = -1, double max_total_energy = -1, time_t earliest_start = time(nullptr));
+        int numsamples = 5, double charging_power = 7.3, double min_total_energy = -1, double max_total_energy = -1, time_t earliest_start_time = time(nullptr));
         
     void generate_dependency_polygons();
     void calculate_latest_start_time();
@@ -60,6 +60,9 @@ public:
     int get_est_hour() const;
     int get_et_hour() const;
     int get_lst_hour() const;
+    time_t get_est() const;
+    time_t get_lst() const;
+    time_t get_et() const; 
 
     
     // Overload the << operator for easy printing

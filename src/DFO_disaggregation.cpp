@@ -30,9 +30,9 @@ pair<vector<double>, vector<double>> DFO_disaggregation::disagg1to2(
     }
 
     // Determine offsets in start time
-    time_t start_time = min(D1.earliest_start, D2.earliest_start);
-    int offset_1 = static_cast<int>(duration_cast<hours>(seconds(D1.earliest_start - start_time)).count());
-    int offset_2 = static_cast<int>(duration_cast<hours>(seconds(D2.earliest_start - start_time)).count());
+    time_t start_time = min(D1.earliest_start_time, D2.earliest_start_time);
+    int offset_1 = static_cast<int>(duration_cast<hours>(seconds(D1.earliest_start_time - start_time)).count());
+    int offset_2 = static_cast<int>(duration_cast<hours>(seconds(D2.earliest_start_time - start_time)).count());
 
     // Determine overlapping region
     int overlap_start = max(offset_1, offset_2);
@@ -122,16 +122,16 @@ vector<vector<double>> DFO_disaggregation::disagg1toN(
     }
 
     // Find the earliest start time across all DFOs
-    time_t start_time = DFOs[0].earliest_start;
+    time_t start_time = DFOs[0].earliest_start_time;
     for (const auto& dfo : DFOs) {
-        start_time = min(start_time, dfo.earliest_start);
+        start_time = min(start_time, dfo.earliest_start_time);
     }
 
     // Calculate offsets and end times for each DFO
     vector<int> offsets(N);
     vector<int> end_times(N);
     for (size_t i = 0; i < N; i++) {
-        offsets[i] = static_cast<int>((DFOs[i].earliest_start - start_time) / 3600);
+        offsets[i] = static_cast<int>((DFOs[i].earliest_start_time - start_time) / 3600);
         end_times[i] = offsets[i] + static_cast<int>(DFOs[i].polygons.size());
     }
 
