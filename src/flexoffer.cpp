@@ -1,7 +1,7 @@
 #include "../include/flexoffer.h"
 #include "../include/config.h"
 
-#include <tuple>
+#include <cmath>
 #include <iostream>
 #include <iomanip>
 
