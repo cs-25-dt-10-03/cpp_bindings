@@ -7,6 +7,7 @@
 #include <tuple>
 #include <algorithm>
 #include <limits>
+#include <cmath>
 
 Flexoffer start_alignment_aggregate(const vector<Flexoffer>& flex_offers) {
 
