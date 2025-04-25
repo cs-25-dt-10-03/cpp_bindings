@@ -45,6 +45,8 @@ double Flexoffer::get_max_overall_alloc() const {return max_overall_alloc;};
 //Setters
 void Flexoffer::set_scheduled_allocation(vector<double> new_sa) {scheduled_allocation = new_sa;};
 void Flexoffer::set_scheduled_start_time(time_t new_st) {scheduled_start_time = new_st;};
+void Flexoffer::set_profile(const std::vector<TimeSlice>& new_profile) {profile = new_profile;};
+
 
 void Flexoffer::print_flexoffer() {
     // Helper lambda to convert time_t to readable format

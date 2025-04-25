@@ -49,6 +49,7 @@ class Flexoffer{
         // Setters
         void set_scheduled_allocation(std::vector<double>);
         void set_scheduled_start_time(time_t);
+        void set_profile(const std::vector<TimeSlice>& new_profile);
 
         // Additional methods
         int get_est_hour() const;

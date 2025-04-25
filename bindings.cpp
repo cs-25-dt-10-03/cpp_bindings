@@ -32,6 +32,7 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("get_scheduled_start_time", &Flexoffer::get_scheduled_start_time)
         .def("set_scheduled_allocation", &Flexoffer::set_scheduled_allocation)
         .def("set_scheduled_start_time", &Flexoffer::set_scheduled_start_time)
+        .def("set_profile", &Flexoffer::set_profile)
         .def("print_flexoffer", &Flexoffer::print_flexoffer)
         .def("get_est_hour", &Flexoffer::get_est_hour)
         .def("get_lst_hour", &Flexoffer::get_lst_hour)
