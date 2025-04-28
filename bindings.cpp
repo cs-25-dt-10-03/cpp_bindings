@@ -91,6 +91,10 @@ PYBIND11_MODULE(flexoffer_logic, m) {
     m.def("findOrInterpolatePoints", &DFO_Aggregation::findOrInterpolatePoints, 
         "Finds or interpolate points for a given dependency value",
         pybind11::arg("points"), pybind11::arg("dependency_value"));
+    
+    m.def("padDFOsToCommonTimeline", &DFO_Aggregation::padDFOsToCommonTimeline, 
+        "Pad a list of DFOs to align on a common timeline",
+        pybind11::arg("dfos"));
 
     m.def("disagg1to2", &DFO_disaggregation::disagg1to2, "Disaggregate a single aggregated DFO into two",
         pybind11::arg("D1"), pybind11::arg("D2"), pybind11::arg("DA"), pybind11::arg("yA_ref"));

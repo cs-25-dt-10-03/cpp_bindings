@@ -1,4 +1,5 @@
 #include "../include/DFO_aggregation.h"
+#include "../include/config.h"
 #include <iostream>
 #include <limits>
 #include <stdexcept>
@@ -50,6 +51,62 @@ vector<DependencyPolygon> DFO_Aggregation::createEndPadding(const DFO& dfo, int 
     return end_polygons;
 }
 
+tuple<std::vector<DFO>, int> DFO_Aggregation::padDFOsToCommonTimeline(const vector<DFO>& dfos) {
+    if (dfos.empty()) {
+        return { {}, 0 };
+    }
+
+    // 🔹 Find earliest start time
+    time_t earliest_start = dfos[0].get_est();
+    for (const DFO& dfo : dfos) {
+        earliest_start = min(earliest_start, dfo.get_est());
+    }
+
+    // 🔹 Calculate how much padding each DFO needs
+    vector<int> start_paddings;
+    vector<int> end_paddings;
+    vector<int> lengths;
+
+    for (const DFO& dfo : dfos) {
+        int pad_start = static_cast<int>((dfo.get_est() - earliest_start) / TIME_RESOLUTION);
+        start_paddings.push_back(pad_start);
+        lengths.push_back(pad_start + dfo.polygons.size());
+    }
+
+    int common_timeline_length = *max_element(lengths.begin(), lengths.end());
+
+    for (size_t i = 0; i < dfos.size(); i++) {
+        int pad_end = common_timeline_length - (start_paddings[i] + dfos[i].polygons.size());
+        end_paddings.push_back(pad_end);
+    }
+
+    // 🔹 Create padded DFOs
+    vector<DFO> padded_dfos;
+    for (size_t i = 0; i < dfos.size(); i++) {
+        const DFO& dfo = dfos[i];
+        int numsamples = dfo.polygons[0].numsamples; // Get the number of samples from the first polygon
+        DFO padded = dfo; // Copy original
+
+        // Clear polygons and build new ones
+        padded.polygons.clear();
+        
+        vector<DependencyPolygon> start_padding = createStartPadding(start_paddings[i], numsamples);
+        vector<DependencyPolygon> end_padding = createEndPadding(dfo, end_paddings[i], numsamples);
+
+        // Concatenate: start padding + original polygons + end padding
+        padded.polygons.insert(padded.polygons.end(), start_padding.begin(), start_padding.end());
+        padded.polygons.insert(padded.polygons.end(), dfo.polygons.begin(), dfo.polygons.end());
+        padded.polygons.insert(padded.polygons.end(), end_padding.begin(), end_padding.end());
+
+        // Adjust the earliest_start to match the new timeline
+        padded.earliest_start_time = earliest_start;
+
+        padded_dfos.push_back(padded);
+    }
+
+    return { padded_dfos, common_timeline_length };
+}
+
 /** 🔹 Helper function: Performs linear interpolation */
 double DFO_Aggregation::linearInterpolation(double x, double x0, double y0, double x1, double y1) {
     if (x1 == x0) return (y0 + y1) / 2.0;  // Prevent division by zero
@@ -95,8 +152,8 @@ DFO DFO_Aggregation::agg2to1(const DFO& dfo1, const DFO& dfo2, int numsamples) {
     time_t start_time = min(dfo1.earliest_start_time, dfo2.earliest_start_time);
 
     // Compute how many padding polygons are needed at the start for each DFO
-    int pad_start_1 = static_cast<int>((dfo1.earliest_start_time - start_time) / 3600);
-    int pad_start_2 = static_cast<int>((dfo2.earliest_start_time - start_time) / 3600);
+    int pad_start_1 = static_cast<int>((dfo1.earliest_start_time - start_time) / TIME_RESOLUTION);
+    int pad_start_2 = static_cast<int>((dfo2.earliest_start_time - start_time) / TIME_RESOLUTION);
 
     // Compute how many padding polygons are needed at the end for each DFO
     int max_length = max(dfo1.polygons.size() + pad_start_1, dfo2.polygons.size() + pad_start_2);

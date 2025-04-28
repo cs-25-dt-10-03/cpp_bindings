@@ -28,11 +28,14 @@ DependencyPolygon::DependencyPolygon(double min_prev, double max_prev, int numsa
     : min_prev_energy(min_prev), max_prev_energy(max_prev), numsamples(numsamples) {}
 
 void DependencyPolygon::generate_polygon(double charging_power, double next_min_prev, double next_max_prev) {
+    double timestep_scaling = TIME_RESOLUTION / 3600.0;
+    double adjusted_charging_power = charging_power * timestep_scaling;
+
     if (min_prev_energy == max_prev_energy) {
         double min_current_energy = max(next_min_prev - min_prev_energy, 0.0);
-        min_current_energy = min(min_current_energy, charging_power); // Limit to charging power
+        min_current_energy = min(min_current_energy, adjusted_charging_power); // Limit to charging power
         double max_current_energy = max(next_max_prev - min_prev_energy, 0.0);
-        max_current_energy = min(max_current_energy, charging_power); // Limit to charging power
+        max_current_energy = min(max_current_energy, adjusted_charging_power); // Limit to charging power
 
         add_point(min_prev_energy, min_current_energy);
         add_point(max_prev_energy, max_current_energy);
@@ -45,9 +48,9 @@ void DependencyPolygon::generate_polygon(double charging_power, double next_min_
 
         // Calculate the min and max energy needed for the next time slice
         double min_current_energy = max(next_min_prev - current_prev_energy, 0.0);
-        min_current_energy = min(min_current_energy, charging_power); // Limit to charging power
+        min_current_energy = min(min_current_energy, adjusted_charging_power); // Limit to charging power
         double max_current_energy = max(next_max_prev - current_prev_energy, 0.0);
-        max_current_energy = min(max_current_energy, charging_power); // Limit to charging power
+        max_current_energy = min(max_current_energy, adjusted_charging_power); // Limit to charging power
 
         // Add the points to the polygon
         add_point(current_prev_energy, min_current_energy);
@@ -150,7 +153,7 @@ void DFO::calculate_latest_start_time() {
     latest_start_time = earliest_start_time;
     for (const auto& polygon : polygons) {
         if (polygon.points.front().y == 0) {
-            latest_start_time += 3600;
+            latest_start_time += TIME_RESOLUTION;
         } else {
             break;
         }
