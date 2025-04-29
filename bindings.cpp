@@ -8,6 +8,7 @@
 #include "include/config.h"
 #include "include/DFO_aggregation.h"
 #include "include/DFO_disaggregation.h"
+#include "include/flexoffer_disaggregation.h"
 
 PYBIND11_MODULE(flexoffer_logic, m) {
     pybind11::class_<TimeSlice>(m, "TimeSlice")
@@ -118,6 +119,9 @@ PYBIND11_MODULE(flexoffer_logic, m) {
 
     m.attr("TIME_RESOLUTION") = TIME_RESOLUTION;
     m.def("reload_config", &loadConfig, "Reload configuration from config.json");
-    
+
+    m.def("dissaggregate_flexoffers", &dissaggregate_flexoffers,
+        pybind11::arg("aggregated_offer"), pybind11::arg("individual_offers"),
+        "Disaggregates an AFO into individual offers with a schedule.");
 }
 

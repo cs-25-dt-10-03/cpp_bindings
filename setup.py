@@ -4,9 +4,9 @@ import pybind11
 ext_modules = [
     Extension(
         "flexoffer_logic",
-        ["bindings.cpp", "src/clusters.cpp", "src/flexoffer.cpp", "src/groups.cpp", "src/helpers.cpp", "src/alignments.cpp", "src/DFO.cpp", 
-         "src/DFO_aggregation.cpp", "src/DFO_disaggregation.cpp", "src/config.cpp"],
-        include_dirs=[pybind11.get_include(), "../include"],  
+        ["bindings.cpp", "src/clusters.cpp", "src/flexoffer.cpp", "src/groups.cpp", "src/helpers.cpp", "src/alignments.cpp", "src/DFO.cpp",
+         "src/DFO_aggregation.cpp", "src/DFO_disaggregation.cpp", "src/config.cpp", "src/flexoffer_disaggregation.cpp"],
+        include_dirs=[pybind11.get_include(), "../include"],
         language="c++",
     ),
 ]
@@ -17,4 +17,3 @@ setup(
     ext_modules=ext_modules,
     zip_safe=False,
 )
-
