@@ -47,6 +47,8 @@ public:
     time_t earliest_start_time;
     time_t end_time;
     time_t latest_start_time;
+    vector<double> scheduled_allocation;
+    time_t scheduled_start_time;
 
     DFO(int dfo_id, const vector<double>& min_prev, const vector<double>& max_prev, 
         int numsamples = 5, double charging_power = 7.3, double min_total_energy = -1, double max_total_energy = -1, time_t earliest_start_time = time(nullptr));
@@ -62,7 +64,11 @@ public:
     int get_lst_hour() const;
     time_t get_est() const;
     time_t get_lst() const;
-    time_t get_et() const; 
+    time_t get_et() const;
+    void set_scheduled_allocation(const vector<double>& allocation);
+    void set_scheduled_start_time(time_t start_time);
+    const vector<double>& get_scheduled_allocation() const;
+    time_t get_scheduled_start_time() const; 
 
     
     // Overload the << operator for easy printing

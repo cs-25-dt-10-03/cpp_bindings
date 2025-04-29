@@ -51,7 +51,7 @@ vector<DependencyPolygon> DFO_Aggregation::createEndPadding(const DFO& dfo, int 
     return end_polygons;
 }
 
-tuple<std::vector<DFO>, int> DFO_Aggregation::padDFOsToCommonTimeline(const vector<DFO>& dfos) {
+tuple<vector<DFO>, int> DFO_Aggregation::padDFOsToCommonTimeline(const vector<DFO>& dfos) {
     if (dfos.empty()) {
         return { {}, 0 };
     }

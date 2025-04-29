@@ -179,3 +179,19 @@ int DFO::get_et_hour() const {
 time_t DFO::get_est() const {return earliest_start_time;};
 time_t DFO::get_lst() const {return latest_start_time;};
 time_t DFO::get_et() const {return end_time;}
+
+void DFO::set_scheduled_allocation(const vector<double>& allocation) {
+    this->scheduled_allocation = allocation;
+}
+
+void DFO::set_scheduled_start_time(time_t start_time) {
+    this->scheduled_start_time = start_time;
+}
+
+const vector<double>& DFO::get_scheduled_allocation() const {
+    return this->scheduled_allocation;
+}
+
+time_t DFO::get_scheduled_start_time() const {
+    return this->scheduled_start_time;
+}
