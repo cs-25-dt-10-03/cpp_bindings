@@ -12,6 +12,7 @@ class DFO_Aggregation {
 public:
     static vector<DependencyPolygon> createStartPadding(int num_padding, int numsamples);
     static vector<DependencyPolygon> createEndPadding(const DFO& dfo, int num_padding, int numsamples);
+    static tuple<std::vector<DFO>, int> DFO_Aggregation::padDFOsToCommonTimeline(const vector<DFO>& dfos);
     static vector<Point> findOrInterpolatePoints(const vector<Point>& points, double dependency_value);
     static double linearInterpolation(double x, double x0, double y0, double x1, double y1);
 

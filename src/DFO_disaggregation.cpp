@@ -1,4 +1,5 @@
 #include "../include/DFO_disaggregation.h"
+#include "../include/config.h"
 #include <algorithm>
 #include <cstddef>
 #include <stdexcept>
@@ -31,8 +32,8 @@ pair<vector<double>, vector<double>> DFO_disaggregation::disagg1to2(
 
     // Determine offsets in start time
     time_t start_time = min(D1.earliest_start_time, D2.earliest_start_time);
-    int offset_1 = static_cast<int>(duration_cast<hours>(seconds(D1.earliest_start_time - start_time)).count());
-    int offset_2 = static_cast<int>(duration_cast<hours>(seconds(D2.earliest_start_time - start_time)).count());
+    int offset_1 = static_cast<int>((D1.earliest_start_time - start_time) / TIME_RESOLUTION);
+    int offset_2 = static_cast<int>((D2.earliest_start_time - start_time) / TIME_RESOLUTION);
 
     // Determine overlapping region
     int overlap_start = max(offset_1, offset_2);
@@ -131,7 +132,7 @@ vector<vector<double>> DFO_disaggregation::disagg1toN(
     vector<int> offsets(N);
     vector<int> end_times(N);
     for (size_t i = 0; i < N; i++) {
-        offsets[i] = static_cast<int>((DFOs[i].earliest_start_time - start_time) / 3600);
+        offsets[i] = static_cast<int>((DFOs[i].earliest_start_time - start_time) / TIME_RESOLUTION);
         end_times[i] = offsets[i] + static_cast<int>(DFOs[i].polygons.size());
     }
 
