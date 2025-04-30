@@ -53,7 +53,8 @@ vector<DependencyPolygon> DFO_Aggregation::createEndPadding(const DFO& dfo, int 
 
 tuple<vector<DFO>, int> DFO_Aggregation::padDFOsToCommonTimeline(const vector<DFO>& dfos) {
     if (dfos.empty()) {
-        return { {}, 0 };
+        vector<DFO> res = {};
+        return { res, 0 };
     }
 
     // 🔹 Find earliest start time
