@@ -195,3 +195,8 @@ const vector<double>& DFO::get_scheduled_allocation() const {
 time_t DFO::get_scheduled_start_time() const {
     return this->scheduled_start_time;
 }
+
+const vector<int> DFO::get_profile() const {
+    vector<int> profile;
+    profile = vector<int>(polygons.size(), 0);
+    return profile;

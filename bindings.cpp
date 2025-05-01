@@ -81,6 +81,7 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("get_est", &DFO::get_est)
         .def("get_lst", &DFO::get_lst)
         .def("get_et", &DFO::get_et)
+        .def("get_profile", &DFO::get_profile)
         .def("set_scheduled_allocation", &DFO::set_scheduled_allocation)
         .def("set_scheduled_start_time", &DFO::set_scheduled_start_time)
         .def("get_scheduled_allocation", &DFO::get_scheduled_allocation)

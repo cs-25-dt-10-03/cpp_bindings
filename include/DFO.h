@@ -68,7 +68,8 @@ public:
     void set_scheduled_allocation(const vector<double>& allocation);
     void set_scheduled_start_time(time_t start_time);
     const vector<double>& get_scheduled_allocation() const;
-    time_t get_scheduled_start_time() const; 
+    time_t get_scheduled_start_time() const;
+    const vector<int> get_profile() const; 
 
     
     // Overload the << operator for easy printing
