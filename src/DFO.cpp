@@ -200,3 +200,4 @@ const vector<int> DFO::get_profile() const {
     vector<int> profile;
     profile = vector<int>(polygons.size(), 0);
     return profile;
+}
