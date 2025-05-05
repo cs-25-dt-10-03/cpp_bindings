@@ -175,6 +175,7 @@ DFO DFO_Aggregation::agg2to1(const DFO& dfo1, const DFO& dfo2, int numsamples) {
     // Aggregate the aligned polygons
     vector<DependencyPolygon> aggregated_polygons;
 
+
     for (int i = 0; i < max_length; i++) {
         const DependencyPolygon& polygon1 = padded_polygons_1[i];
         const DependencyPolygon& polygon2 = padded_polygons_2[i];
@@ -226,7 +227,12 @@ DFO DFO_Aggregation::agg2to1(const DFO& dfo1, const DFO& dfo2, int numsamples) {
         aggregated_polygons.push_back(aggregated_polygon);
     }
 
-    DFO aggregated_DFO = DFO(-1, {0}, {0}, numsamples, 0.0, -1, -1, start_time);
+    double min_overall_energy = dfo1.min_total_energy + dfo2.min_total_energy;
+    double max_overall_energy = dfo1.max_total_energy + dfo2.max_total_energy;
+
+
+    DFO aggregated_DFO = DFO(-1, {0}, {0}, numsamples, 0.0, min_overall_energy, max_overall_energy, start_time);
+
     aggregated_DFO.polygons = aggregated_polygons;
     aggregated_DFO.calculate_latest_start_time();
     return aggregated_DFO;

@@ -36,11 +36,13 @@ Flexoffer start_alignment_aggregate(const vector<Flexoffer>& flex_offers) {
         agg_total_max += flex_offers[i].get_max_overall_alloc();
     }
 
+    time_t aggregated_end = global_earliest + common_length * TIME_RESOLUTION;
+
     return Flexoffer(
         -1,
         global_earliest,
         aggregated_latest,
-        aggregated_latest,
+        aggregated_end,
         aggregated_profile,
         common_length,
         agg_total_min,
