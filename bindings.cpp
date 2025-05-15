@@ -128,6 +128,8 @@ PYBIND11_MODULE(flexoffer_logic, m) {
 
     m.attr("TIME_RESOLUTION") = TIME_RESOLUTION;
     m.def("reload_config", &loadConfig, "Reload configuration from config.json");
+    m.def("set_time_resolution", &set_time_resolution, "set_time_resolution", 
+        pybind11::arg("timeRes"));
 
     m.def("dissaggregate_flexoffers", &dissaggregate_flexoffers,
         pybind11::arg("aggregated_offer"), pybind11::arg("individual_offers"),

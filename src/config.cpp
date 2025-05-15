@@ -32,3 +32,8 @@ struct ConfigInitializer {
 };
 
 static ConfigInitializer configInit;
+
+void set_time_resolution(int timeRes) {
+    TIME_RESOLUTION = timeRes;
+    cout << "TIME RESOLUTION: " <<TIME_RESOLUTION << "\n";
+}
