@@ -11,6 +11,9 @@ class TimeSlice {
     public:
         double min_power; // Minimum power in kW
         double max_power; // Maximum power in kW
+
+        TimeSlice() : min_power(0.0), max_power(0.0) {}
+
         TimeSlice(double min, double max);
 };
 
@@ -28,7 +31,7 @@ class Flexoffer{
         time_t scheduled_start_time;
     public:
         //Constructor
-        Flexoffer(int oi, time_t est, time_t lst, time_t et, vector<TimeSlice> &p, int d, double min = 0, double max = 0);
+        Flexoffer(int oi, time_t est, time_t lst, time_t et, const vector<TimeSlice> &p, int d, double min = 0, double max = 0);
 
         //Destructor
         virtual ~Flexoffer();

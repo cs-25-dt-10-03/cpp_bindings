@@ -70,8 +70,8 @@ public:
     const vector<double>& get_scheduled_allocation() const;
     time_t get_scheduled_start_time() const;
     const vector<int> get_profile() const; 
+    const int get_duration() const;
 
-    
     // Overload the << operator for easy printing
     friend ostream& operator<<(ostream& os, const DFO& dfo);
 };

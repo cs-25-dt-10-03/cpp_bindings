@@ -11,10 +11,27 @@
 #include "include/flexoffer_disaggregation.h"
 
 PYBIND11_MODULE(flexoffer_logic, m) {
+    // pybind11::class_<TimeSlice>(m, "TimeSlice")
+    //     .def(pybind11::init<double, double>())
+    //     .def_readwrite("min_power", &TimeSlice::min_power)
+    //     .def_readwrite("max_power", &TimeSlice::max_power);
+
     pybind11::class_<TimeSlice>(m, "TimeSlice")
         .def(pybind11::init<double, double>())
         .def_readwrite("min_power", &TimeSlice::min_power)
-        .def_readwrite("max_power", &TimeSlice::max_power);
+        .def_readwrite("max_power", &TimeSlice::max_power)
+        .def(pybind11::pickle(
+            [](const TimeSlice& ts) {
+                return pybind11::make_tuple(ts.min_power, ts.max_power);
+            },
+            [](pybind11::tuple t) {
+                return TimeSlice(t[0].cast<double>(), t[1].cast<double>());
+            }
+        ));
+
+
+
+
 
     pybind11::class_<Flexoffer>(m, "Flexoffer")
         .def(pybind11::init<int, time_t, time_t, time_t, std::vector<TimeSlice>&, int, double, double>(),
@@ -39,7 +56,24 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("get_lst_hour", &Flexoffer::get_lst_hour)
         .def("get_et_hour", &Flexoffer::get_et_hour)
         .def("get_total_energy", &Flexoffer::get_total_energy)
-        .def("get_allowed_start_times", &Flexoffer::get_allowed_start_times);
+        .def("get_allowed_start_times", &Flexoffer::get_allowed_start_times)
+        .def(pybind11::pickle(
+            [](const Flexoffer& f) {return pybind11::make_tuple(f.get_offer_id(),f.get_est(),f.get_lst(),f.get_et(),f.get_profile(),f.get_duration(),f.get_min_overall_alloc(),f.get_max_overall_alloc());},
+            [](pybind11::tuple t) {
+                // Note: std::vector<TimeSlice> must be passed by non-const reference
+                auto profile = t[4].cast<std::vector<TimeSlice>>();
+                return Flexoffer(
+                    t[0].cast<int>(),               // offer_id
+                    t[1].cast<time_t>(),            // est
+                    t[2].cast<time_t>(),            // lst
+                    t[3].cast<time_t>(),            // et
+                    profile,                        // profile (non-const reference!)
+                    t[5].cast<int>(),               // duration
+                    t[6].cast<double>(),            // min alloc
+                    t[7].cast<double>()             // max alloc
+                );
+            }
+        ));
     
     pybind11::class_<Point>(m, "Point")
         .def(pybind11::init<double, double>())
@@ -82,6 +116,7 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def("get_lst", &DFO::get_lst)
         .def("get_et", &DFO::get_et)
         .def("get_profile", &DFO::get_profile)
+        .def("get_duration", &DFO::get_duration)
         .def("set_scheduled_allocation", &DFO::set_scheduled_allocation)
         .def("set_scheduled_start_time", &DFO::set_scheduled_start_time)
         .def("get_scheduled_allocation", &DFO::get_scheduled_allocation)
@@ -124,6 +159,10 @@ PYBIND11_MODULE(flexoffer_logic, m) {
     m.def("balance_alignment_aggregate", &balance_alignment_aggregate, "Aggregate FlexOffers using balance alignment.",
         pybind11::arg("flex_offers"), 
         pybind11::arg("num_candidates"));
+        
+    m.def("balance_alignment_tree_merge", &balance_alignment_tree_merge,
+        "Aggregate FlexOffers using tree-based balance merge",
+        pybind11::arg("flex_offers"), pybind11::arg("num_candidates") = 5);
 
 
     m.attr("TIME_RESOLUTION") = TIME_RESOLUTION;

@@ -13,17 +13,16 @@ TimeSlice::TimeSlice(double min, double max){
 }
 
 Flexoffer::Flexoffer(int oi, time_t est, time_t lst, time_t et,
-                     vector<TimeSlice> &p, int d, double min, double max){
-    offer_id = oi;
-    earliest_start_time = est;
-    latest_start_time = lst;
-    duration = d;
-    profile = p;
-    end_time = et;
-    scheduled_allocation.resize(duration, 0.0);
-    scheduled_start_time = est;
-    min_overall_alloc = min;
-    max_overall_alloc = max;
+    const vector<TimeSlice> &p, int d, double min, double max){
+    this->offer_id = oi;
+    this->earliest_start_time = est;
+    this->latest_start_time = lst;
+    this->end_time = et;
+    this->profile = p;
+    this->duration = d;
+    this->min_overall_alloc = min;
+    this->max_overall_alloc = max;
+    this->scheduled_allocation = vector<double>(duration, 0.0);
 };
 
 //Destructor

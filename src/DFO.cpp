@@ -201,3 +201,7 @@ const vector<int> DFO::get_profile() const {
     profile = vector<int>(polygons.size(), 0);
     return profile;
 }
+
+const int DFO::get_duration() const {
+    return polygons.size();
+}

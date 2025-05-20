@@ -2,6 +2,7 @@
 #include "../include/flexoffer.h"
 #include "../include/config.h"
 
+#include <iostream>
 #include <vector>
 #include <tuple>
 #include <algorithm>
@@ -11,24 +12,21 @@
 using namespace std;
 
 tuple<int, int> compute_aggregated_window(const vector<Flexoffer>& flex_offers) {
+    time_t global_earliest = numeric_limits<time_t>::max();
 
-    time_t global_earliest = numeric_limits<int>::max();
-    int min_flex = numeric_limits<int>::max();
-    
+    // First pass: find minimum earliest start
     for (const auto& fo : flex_offers) {
-        time_t earliest = fo.get_est();
-        time_t latest = fo.get_lst();
-        int flex = latest - earliest;
-
-        if (earliest < global_earliest) {
-            global_earliest = earliest;
-        }
-        if (flex < min_flex) {
-            min_flex = flex;
-        }
+        global_earliest = min(global_earliest, fo.get_est());
     }
 
-    int aggregated_latest = global_earliest + min_flex;
+    // Second pass: find min(lst_i - (est_i - global_earliest))
+    time_t min_time_flex = std::numeric_limits<time_t>::max();
+    for (const auto& fo : flex_offers) {
+        time_t time_flex = fo.get_lst() - fo.get_est();
+        min_time_flex = std::min(min_time_flex, time_flex);
+    }
+    time_t aggregated_latest = global_earliest + min_time_flex;
+
     return make_tuple(global_earliest, aggregated_latest);
 }
 
@@ -42,7 +40,6 @@ vector<int> compute_offsets_and_length(const vector<Flexoffer>& flex_offers, tim
         offsets.push_back(offset);
         common_length = max(common_length, offset + fo.get_duration());
     }
-
     return offsets;
 }
 
@@ -79,35 +76,47 @@ int get_least_flexible_index(const vector<Flexoffer>& flex_offers, const vector<
     return min_index;
 }
 
-
 Flexoffer aggregate_two(const Flexoffer& a, const Flexoffer& b, int offset) {
-    // New aggregate length is the maximum of a's length and (offset + b's length)
-    int new_length = max(a.get_duration(), offset + b.get_duration());
-    vector<TimeSlice> new_profile(new_length, TimeSlice(0.0, 0.0));
+    const std::vector<TimeSlice>& a_profile = a.get_profile();
+    const std::vector<TimeSlice>& b_profile = b.get_profile();
+    int a_duration = a.get_duration();
+    int b_duration = b.get_duration();
 
-    // Add profile of 'a'
-    const auto& profA = a.get_profile();
-    for (size_t i = 0; i < profA.size(); ++i) {
-        new_profile[i].min_power += profA[i].min_power;
-        new_profile[i].max_power += profA[i].max_power;
+    int a_offset = std::max(0, offset);
+    int b_offset = std::max(0, -offset);
+
+    int total_slots = std::max(a_offset + a_duration, b_offset + b_duration);
+
+    std::vector<double> min_power(total_slots, 0.0);
+    std::vector<double> max_power(total_slots, 0.0);
+
+    for (int i = 0; i < a_duration; ++i) {
+        min_power[a_offset + i] += a_profile[i].min_power;
+        max_power[a_offset + i] += a_profile[i].max_power;
     }
-    // Add profile of 'b', shifted by offset
-    const auto& profB = b.get_profile();
-    for (size_t i = 0; i < profB.size(); ++i) {
-        int pos = offset + static_cast<int>(i);
-        if (pos < new_length) {
-            new_profile[pos].min_power += profB[i].min_power;
-            new_profile[pos].max_power += profB[i].max_power;
-        }
+
+    for (int i = 0; i < b_duration; ++i) {
+        min_power[b_offset + i] += b_profile[i].min_power;
+        max_power[b_offset + i] += b_profile[i].max_power;
     }
-    
-    // New aggregate retains the original start time.
-    time_t new_start = a.get_est();
-    time_t new_end = new_start + new_length * TIME_RESOLUTION;
-    
-    // Combine overall allocations.
-    double new_min_alloc = a.get_min_overall_alloc() + b.get_min_overall_alloc();
-    double new_max_alloc = a.get_max_overall_alloc() + b.get_max_overall_alloc();
-    
-    return Flexoffer(-1, new_start, new_end, new_end, new_profile, new_length, new_min_alloc, new_max_alloc);
+
+    std::vector<TimeSlice> new_profile;
+    new_profile.reserve(total_slots);
+
+    for (int i = 0; i < total_slots; ++i) {
+        TimeSlice ts;
+        ts.min_power = min_power[i];
+        ts.max_power = max_power[i];
+        new_profile.push_back(ts);
+    }
+
+    time_t new_start = std::min(a.get_est(), b.get_est());
+    time_t new_lst = std::max(a.get_lst(), b.get_lst());
+    time_t new_et = std::max(a.get_et(), b.get_et());
+
+    double total_min = a.get_min_overall_alloc() + b.get_min_overall_alloc();
+    double total_max = a.get_max_overall_alloc() + b.get_max_overall_alloc();
+
+    return Flexoffer(-1, new_start, new_lst, new_et, std::move(new_profile),
+                     total_slots, total_min, total_max);
 }
