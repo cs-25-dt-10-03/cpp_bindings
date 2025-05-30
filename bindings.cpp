@@ -165,11 +165,8 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         "Aggregate FlexOffers using tree-based balance merge",
         pybind11::arg("flex_offers"), pybind11::arg("num_candidates") = 5);
 
-
-    m.attr("TIME_RESOLUTION") = TIME_RESOLUTION;
-    m.def("reload_config", &loadConfig, "Reload configuration from config.json");
-    m.def("set_time_resolution", &set_time_resolution, "set_time_resolution", 
-        pybind11::arg("timeRes"));
+    m.def("get_time_resolution", &get_time_resolution);
+    m.def("set_time_resolution", &set_time_resolution), pybind11::arg("timeRes");
 
     m.def("dissaggregate_flexoffers", &dissaggregate_flexoffers,
         pybind11::arg("aggregated_offer"), pybind11::arg("individual_offers"),

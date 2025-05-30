@@ -27,6 +27,7 @@ tuple<int, int> compute_aggregated_window(const vector<Flexoffer>& flex_offers) 
     }
     time_t aggregated_latest = global_earliest + min_time_flex;
 
+
     return make_tuple(global_earliest, aggregated_latest);
 }
 
@@ -76,47 +77,72 @@ int get_least_flexible_index(const vector<Flexoffer>& flex_offers, const vector<
     return min_index;
 }
 
-Flexoffer aggregate_two(const Flexoffer& a, const Flexoffer& b, int offset) {
-    const std::vector<TimeSlice>& a_profile = a.get_profile();
-    const std::vector<TimeSlice>& b_profile = b.get_profile();
-    int a_duration = a.get_duration();
-    int b_duration = b.get_duration();
+Flexoffer aggregate_two(const Flexoffer& a,
+                        const Flexoffer& b,
+                        int offset){
 
-    int a_offset = std::max(0, offset);
-    int b_offset = std::max(0, -offset);
+    // 1) Compute how far left we need to go
+    int start_shift = std::min(0, offset);
 
-    int total_slots = std::max(a_offset + a_duration, b_offset + b_duration);
+    // 2) end‐point is furthest slot we need: max(A_end, B_end)
+    int end_point = std::max(a.get_duration(), offset + b.get_duration());
+    int new_length  = end_point - start_shift;  
 
-    std::vector<double> min_power(total_slots, 0.0);
-    std::vector<double> max_power(total_slots, 0.0);
 
-    for (int i = 0; i < a_duration; ++i) {
-        min_power[a_offset + i] += a_profile[i].min_power;
-        max_power[a_offset + i] += a_profile[i].max_power;
+    // 2) Initialize aggregated profile to zero
+    std::vector<TimeSlice> new_profile(new_length, TimeSlice(0.0, 0.0));
+
+    const auto& profA = a.get_profile();
+    const auto& profB = b.get_profile();
+
+
+    // lay down A at [-start_shift .. -start_shift + a.duration-1]
+    for (int i = 0; i < a.get_duration(); ++i) {
+        int pos = i - start_shift;
+        new_profile[pos].min_power += profA[i].min_power;
+        new_profile[pos].max_power += profA[i].max_power;
     }
 
-    for (int i = 0; i < b_duration; ++i) {
-        min_power[b_offset + i] += b_profile[i].min_power;
-        max_power[b_offset + i] += b_profile[i].max_power;
+    // lay down B at [offset-start_shift .. offset-start_shift + b.duration-1]
+    for (int i = 0; i < b.get_duration(); ++i) {
+        int pos = offset + i - start_shift;
+        if (pos >= 0 && pos < new_length) {
+            new_profile[pos].min_power += profB[i].min_power;
+            new_profile[pos].max_power += profB[i].max_power;
+        }
     }
+            
+    
+    // 5) Compute the merged flex‐start window:
+    //    A can start in [a.est, a.lst]
+    //    B (shifted) can start at T such that
+    //       (T + offset*RES) ∈ [b.est, b.lst]
+    //    ⇒ T ∈ [b.est - offset*RES,  b.lst - offset*RES]
+    const time_t off_sec = offset * TIME_RESOLUTION;
+    time_t new_est = std::max(a.get_est(),
+                              b.get_est() - off_sec);
+    time_t new_lst = std::min(a.get_lst(),
+                              b.get_lst() - off_sec);
 
-    std::vector<TimeSlice> new_profile;
-    new_profile.reserve(total_slots);
+    // 6) Latest‐end tracks new_lst + duration
+    time_t new_et  = new_lst + new_length * TIME_RESOLUTION;
 
-    for (int i = 0; i < total_slots; ++i) {
-        TimeSlice ts;
-        ts.min_power = min_power[i];
-        ts.max_power = max_power[i];
-        new_profile.push_back(ts);
-    }
+    // 7) Sum the overall‐allocation bounds
+    double new_min_alloc = a.get_min_overall_alloc()
+                         + b.get_min_overall_alloc();
+    double new_max_alloc = a.get_max_overall_alloc()
+                         + b.get_max_overall_alloc();
 
-    time_t new_start = std::min(a.get_est(), b.get_est());
-    time_t new_lst = std::max(a.get_lst(), b.get_lst());
-    time_t new_et = std::max(a.get_et(), b.get_et());
-
-    double total_min = a.get_min_overall_alloc() + b.get_min_overall_alloc();
-    double total_max = a.get_max_overall_alloc() + b.get_max_overall_alloc();
-
-    return Flexoffer(-1, new_start, new_lst, new_et, std::move(new_profile),
-                     total_slots, total_min, total_max);
+    // 8) Return the aggregated, still‐flexible Flexoffer
+    //    id = -1 is a placeholder
+    return Flexoffer(
+        -1,
+        new_est,      // earliest_start
+        new_lst,      // latest_start  (nonzero slack)
+        new_et,       // end_time = latest_start + duration
+        new_profile,  // merged profile
+        new_length,   // duration in slots
+        new_min_alloc,
+        new_max_alloc
+    );
 }

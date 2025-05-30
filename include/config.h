@@ -5,7 +5,7 @@
 
 extern int TIME_RESOLUTION;
 
-void loadConfig();
 void set_time_resolution(int);
+int get_time_resolution();
 
 #endif

@@ -34,7 +34,7 @@ time_t Flexoffer::get_est() const {return earliest_start_time;};
 time_t Flexoffer::get_lst() const {return latest_start_time;};
 time_t Flexoffer::get_et() const {return end_time;} // Now implemented
 int Flexoffer::get_duration() const {return duration;};
-vector<TimeSlice> Flexoffer::get_profile() const {return profile;};
+const vector<TimeSlice>& Flexoffer::get_profile() const { return profile; }
 vector<double> Flexoffer::get_scheduled_allocation() const {return scheduled_allocation;};
 time_t Flexoffer::get_scheduled_start_time() const {return scheduled_start_time;};
 double Flexoffer::get_min_overall_alloc() const {return min_overall_alloc;};
@@ -48,7 +48,6 @@ void Flexoffer::set_profile(const std::vector<TimeSlice>& new_profile) {profile 
 
 
 void Flexoffer::print_flexoffer() {
-    // Helper lambda to convert time_t to readable format
     auto to_readable = [](time_t timestamp) -> string {
         char buffer[20];
         struct tm* timeinfo = localtime(&timestamp);
@@ -61,27 +60,43 @@ void Flexoffer::print_flexoffer() {
     cout << "Earliest Start Time: " << to_readable(earliest_start_time) << std::endl;
     cout << "Latest Start Time:   " << to_readable(latest_start_time) << std::endl;
     cout << "Latest End Time:     " << to_readable(end_time) << std::endl;
-    cout << "Duration:            " << duration << " hour(s)" << std::endl;
+    cout << "Duration:            " << duration << " slot(s)" << std::endl;
     cout << "Profile Elements:" << std::endl;
 
     for (int i = 0; i < duration; i++) {
-        cout << "  Hour " << i << ": Min Power = " << std::fixed << std::setprecision(2)
-                  << profile[i].min_power << " kW, Max Power = "
-                  << profile[i].max_power << " kW" << endl;
+        cout << "  Slot " << i << ": Min Power = " << std::fixed << std::setprecision(2)
+             << profile[i].min_power << " kW, Max Power = "
+             << profile[i].max_power << " kW" << endl;
     }
-    cout << "Scheduled Allocation:" << endl;
-    for (int i = 0; i < duration; i++) {
 
-        time_t t = latest_start_time + i * 3600;
-        cout << "  Hour " << i << " (" << to_readable(t) << "): "
-             << "Power=" << scheduled_allocation[i] << " kW" << endl;
+    bool has_schedule = false;
+    for (double p : scheduled_allocation) {
+        if (p > 0.001) {
+            has_schedule = true;
+            break;
+        }
     }
+
+    if (has_schedule) {
+        cout << "Scheduled Allocation:" << endl;
+        for (int i = 0; i < duration; i++) {
+            if (scheduled_allocation[i] > 0.001) {
+                time_t t = scheduled_start_time + i * TIME_RESOLUTION;
+                cout << "  Slot " << i << " (" << to_readable(t) << "): "
+                     << "Power = " << scheduled_allocation[i] << " kW" << endl;
+            }
+        }
+    } else {
+        cout << "No scheduled allocation yet." << endl;
+    }
+
     if (min_overall_alloc > 0) {
-        cout << "Min total: " << min_overall_alloc << " " << "max total: " << max_overall_alloc << endl;  
+        cout << "Min total: " << min_overall_alloc << ", Max total: " << max_overall_alloc << endl;
     }
 
     cout << "==========================" << endl;
 }
+
 
 // Additional methods
 int Flexoffer::get_est_hour() const {

@@ -6,34 +6,14 @@
 using namespace std;
 using json = nlohmann::json;
 
-int TIME_RESOLUTION;
-
-void loadConfig() {
-    const string path = "../master_thesis/config.json";
-    ifstream file(path);
-    if (!file) {
-        std::cerr << "Error: Could not open " << path << std::endl;
-        return;
-    }
-
-    json config;
-    file >> config;
-
-    if (config.contains("TIME_RESOLUTION")) {
-        TIME_RESOLUTION = config["TIME_RESOLUTION"];
-        std::cout << "TIME_RESOLUTION set to " << TIME_RESOLUTION << " seconds\n";
-    }
-}
-
-struct ConfigInitializer {
-    ConfigInitializer() {
-        loadConfig();
-    }
-};
-
-static ConfigInitializer configInit;
+int TIME_RESOLUTION = 3600;
 
 void set_time_resolution(int timeRes) {
+    cout << "TIME RESOLUTION BEFORE: " << TIME_RESOLUTION << "\n" << "what is provided to the set time resolution" << timeRes << "\n";
     TIME_RESOLUTION = timeRes;
-    cout << "TIME RESOLUTION: " <<TIME_RESOLUTION << "\n";
+    cout << "TIME RESOLUTION AFTER: " <<TIME_RESOLUTION << "\n";
+}
+
+int get_time_resolution() {
+    return TIME_RESOLUTION;
 }

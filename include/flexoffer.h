@@ -42,7 +42,7 @@ class Flexoffer{
         time_t get_lst() const;
         time_t get_et() const; 
         int get_duration() const;
-        vector<TimeSlice> get_profile() const;
+        const vector<TimeSlice>& get_profile() const;
         vector<double> get_scheduled_allocation() const;
         time_t get_scheduled_start_time() const;
         double get_min_overall_alloc() const;
