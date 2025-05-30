@@ -30,6 +30,7 @@ DependencyPolygon::DependencyPolygon(double min_prev, double max_prev, int numsa
 void DependencyPolygon::generate_polygon(double charging_power, double next_min_prev, double next_max_prev) {
     double timestep_scaling = TIME_RESOLUTION / 3600.0;
     double adjusted_charging_power = charging_power * timestep_scaling;
+    this->charging_power = adjusted_charging_power;
 
     if (min_prev_energy == max_prev_energy) {
         double min_current_energy = max(next_min_prev - min_prev_energy, 0.0);

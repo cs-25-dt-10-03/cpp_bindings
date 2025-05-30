@@ -24,6 +24,7 @@ public:
     vector<Point> points;
     double min_prev_energy;
     double max_prev_energy;
+    double charging_power;
     int numsamples;
 
     DependencyPolygon(double min_prev, double max_prev, int numsamples);

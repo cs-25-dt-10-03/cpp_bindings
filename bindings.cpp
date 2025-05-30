@@ -85,6 +85,7 @@ PYBIND11_MODULE(flexoffer_logic, m) {
         .def(pybind11::init<double, double, int>())
         .def_readwrite("min_prev_energy", &DependencyPolygon::min_prev_energy)
         .def_readwrite("max_prev_energy", &DependencyPolygon::max_prev_energy)
+        .def_readwrite("charging_power", &DependencyPolygon::charging_power)
         .def_readwrite("numsamples", &DependencyPolygon::numsamples)
         .def_readwrite("points", &DependencyPolygon::points)
         .def("generate_polygon", &DependencyPolygon::generate_polygon)

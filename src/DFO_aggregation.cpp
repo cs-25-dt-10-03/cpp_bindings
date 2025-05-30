@@ -182,8 +182,10 @@ DFO DFO_Aggregation::agg2to1(const DFO& dfo1, const DFO& dfo2, int numsamples) {
 
         double aggregated_min_prev = polygon1.min_prev_energy + polygon2.min_prev_energy;
         double aggregated_max_prev = polygon1.max_prev_energy + polygon2.max_prev_energy;
+        double aggregated_charging_power = polygon1.charging_power + polygon2.charging_power;
 
         DependencyPolygon aggregated_polygon(aggregated_min_prev, aggregated_max_prev, numsamples);
+        aggregated_polygon.charging_power = aggregated_charging_power;
 
         if (polygon1.points.size() == 2 && polygon2.points.size() == 2) {
             // Special case: only two points (e.g., first timestep with min/max at 0)
