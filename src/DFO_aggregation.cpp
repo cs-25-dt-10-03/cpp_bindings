@@ -122,113 +122,104 @@ double DFO_Aggregation::linearInterpolation(double x, double x0, double y0, doub
 
 /** 🔹 Helper function: Finds or interpolates points for a given dependency value. */
 vector<Point> DFO_Aggregation::findOrInterpolatePoints(const vector<Point>& points, double dependency_value) {
-    vector<Point> matching_points;
-    const double EPSILON = 1e-9; // Define a small epsilon for floating point comparison
+    const double EPSILON = 1e-9; // Small epsilon for floating point comparison
 
-    // 1. Handle empty points vector (though it should ideally not happen based on padding)
+    // 1. 🧠 Handle empty points vector (should not happen with proper padding)
     if (points.empty()) {
+        // Fallback for an empty polygon, return zero usage for the given dependency
         return {Point(dependency_value, 0.0), Point(dependency_value, 0.0)};
     }
 
-    // 2. Try to find exact matches for dependency_value
-    // Since points are sorted by x then y, if multiple points have the same x,
-    // the first will be the min y, and the last will be the max y for that x.
+    // 2. 🧠 Try to find exact matches for dependency_value (x-coordinate)
+    vector<Point> exact_matches;
     for (const Point& p : points) {
         if (abs(p.x - dependency_value) < EPSILON) {
-            matching_points.push_back(p);
+            exact_matches.push_back(p);
         }
     }
 
-    if (!matching_points.empty()) {
-        // If exact matches are found, return the min and max y among them
-        // This handles cases where a polygon might have only one unique x value (e.g., padding polygons).
-        if (matching_points.size() == 1) { // This can happen if min_energy == max_energy for that x
-            return {matching_points[0], matching_points[0]};
-        }
-        // If there are multiple points for the same x, find the actual min and max y
-        double min_y = numeric_limits<double>::max();
-        double max_y = numeric_limits<double>::lowest();
-        for (const auto& p : matching_points) {
-            min_y = min(min_y, p.y);
-            max_y = max(max_y, p.y);
-        }
-        return {Point(dependency_value, min_y), Point(dependency_value, max_y)};
-    }
-
-    // 3. If no exact match, perform linear interpolation.
-    // The previous loop was `for (size_t k = 1; k + 1 < points.size(); k += 2)`.
-    // This loop structure is problematic given the `(x, y_min), (x, y_max), ...` structure.
-    // A better approach is to find the *interval* of x values that contains `dependency_value`.
-    // We need to find `x_i` such that `x_i <= dependency_value <= x_{i+1}`.
-    // The points are: `(x_0, y_0_min), (x_0, y_0_max), (x_1, y_1_min), (x_1, y_1_max), ...`
-
-    // Find the lower bounding index `i` for x_i
-    size_t i = 0;
-    while (i + 1 < points.size() && points[i].x < dependency_value) {
-        // If points[i].x is the same as points[i+1].x, we need to jump over the pair
-        if (abs(points[i].x - points[i+1].x) < EPSILON && i + 2 < points.size()) {
-             i += 2; // Jump to the next distinct x value
+    if (!exact_matches.empty()) {
+        // 🧠🧠🧠
+        // If exact matches are found, determine the min and max y among them.
+        // Since points are sorted by x then y, if multiple points have the same x,
+        // the first will be the min y, and the last will be the max y for that x.
+        // If there's only one point for an x (meaning min_y == max_y), return it twice.
+        if (exact_matches.size() == 1) {
+            return {exact_matches[0], exact_matches[0]};
         } else {
-             i++; // Move to the next point
+            // Find the true min and max y among the matching points
+            double min_y = numeric_limits<double>::max();
+            double max_y = numeric_limits<double>::lowest();
+            for (const auto& p : exact_matches) {
+                min_y = min(min_y, p.y);
+                max_y = max(max_y, p.y);
+            }
+            return {Point(dependency_value, min_y), Point(dependency_value, max_y)};
         }
     }
-    // After this loop, points[i].x is either >= dependency_value, or i is the last index.
 
-    // If dependency_value is smaller than the first x in the polygon, use the first point's values
+    // 3. If no exact match, perform linear interpolation.🧠🧠
+    // Ensure dependency_value is within the x-range of the polygon's points
     if (dependency_value < points.front().x) {
-        // First points are (x0, y0_min) and (x0, y0_max)
-        return {points.front(), points[1]};
+        // Clamp to the first pair of points
+        // Assuming points[0] is (x_min, y_min) and points[1] is (x_min, y_max)
+        return {points[0], points[1]};
     }
-    // If dependency_value is greater than the last x in the polygon, use the last point's values
-    // `points.size() - 2` and `points.size() - 1` would be the last pair (xn, yn_min), (xn, yn_max)
     if (dependency_value > points.back().x) {
+        // Clamp to the last pair of points
+        // Assuming points.at(size-2) is (x_max, y_min) and points.back() is (x_max, y_max)
         return {points.at(points.size() - 2), points.back()};
     }
 
-    // Now, `dependency_value` is within the x-range of the polygon's points.
-    // We need to find the specific pair of points that define the interval for interpolation.
-    // Given the structure `(x_0, y_0_min), (x_0, y_0_max), (x_1, y_1_min), (x_1, y_1_max), ...`
-    // We are looking for an index `idx` such that `points[idx].x` is the lower x-bound and `points[idx+2].x` is the upper x-bound.
+    // Now, dependency_value is strictly between distinct x-values, or exactly on one.
+    // If we're here, it means `dependency_value` doesn't exactly match any `p.x`,
+    // but it's within the overall `x` range.🧠
+    // We need to find the `x_i` and `x_{i+1}` that bracket `dependency_value`.🧠
+    // The points are structured as `(x_0, y_0_min), (x_0, y_0_max), (x_1, y_1_min), (x_1, y_1_max), ...`
+    // So we're looking for an index `idx` such that `points[idx].x` and `points[idx+1].x` correspond
+    // to `x_i`, and `points[idx+2].x` and `points[idx+3].x` correspond to `x_{i+1}`.🧠🧠🧠
 
-    size_t idx_lower_x_min_y = 0;
-    while (idx_lower_x_min_y + 2 < points.size() && points[idx_lower_x_min_y + 2].x < dependency_value) {
-        idx_lower_x_min_y += 2; // Jump to the next pair's min-y point
+    size_t idx_current_x_min_y = 0;
+    // Iterate through the pairs of points to find the lower bound for interpolation
+    // 🧠We need at least 4 points for an interpolation segment (2 for start X, 2 for end X)
+    while (idx_current_x_min_y + 3 < points.size() && // Ensure we have a next pair for interpolation
+           points[idx_current_x_min_y + 2].x < dependency_value) // Check next distinct x value
+    {
+        idx_current_x_min_y += 2; // Move to the start of the next (x,y_min),(x,y_max) pair
     }
 
-    // Now `points[idx_lower_x_min_y].x <= dependency_value`
-    // and `points[idx_lower_x_min_y + 2].x >= dependency_value` (if `idx_lower_x_min_y + 2` is in bounds)
+    // Define the bounding points for interpolation
+    const Point& prev_min_point = points[idx_current_x_min_y];       // 🧠(x_i, y_i_min)
+    const Point& prev_max_point = points[idx_current_x_min_y + 1];   // 🧠(x_i, y_i_max)
+    const Point& next_min_point = points[idx_current_x_min_y + 2];   // 🧠(x_{i+1}, y_{i+1}_min)
+    const Point& next_max_point = points[idx_current_x_min_y + 3];   // 🧠(x_{i+1}, y_{i+1}_max)
 
-    // Points for lower envelope interpolation:
-    const Point& p1_min = points[idx_lower_x_min_y];      // (x_i, y_i_min)
-    const Point& p2_min = points[idx_lower_x_min_y + 2];  // (x_{i+1}, y_{i+1}_min)
+    // Calculate interpolated minimum energy (s_min)
+    double s_min = linearInterpolation(dependency_value, prev_min_point.x, prev_min_point.y, next_min_point.x, next_min_point.y);
 
-    // Points for upper envelope interpolation:
-    const Point& p1_max = points[idx_lower_x_min_y + 1];  // (x_i, y_i_max)
-    const Point& p2_max = points[idx_lower_x_min_y + 3];  // (x_{i+1}, y_{i+1}_max)
+    // 🧠🧠🧠
+    // For cases where the previous slope of interpolation would reach 0 before the next points,
+    // such that it did reach a higher value than simply interpolating between previous points.
+    // This translates to a specific rule: if the future minimum required energy for the next X-value is zero,
+    // then the current minimum energy usage might be constrained by the total energy needed.
+    if (abs(next_min_point.y - 0.0) < EPSILON) { // Check if the next point's minimum y is (effectively) zero
+        // The original logic was: max((prev_min.x + prev_min.y) - dependency_value, 0.0)
+        // This calculates the remaining energy needed from the perspective of the *previous* min point.
+        // It's effectively saying: if you used (prev_min.x + prev_min.y) by the end of this current timestep,
+        // and you're at `dependency_value` now, how much more do you *need* to meet that minimum, capped at 0?
+        // 🧠🧠
+        s_min = max((prev_min_point.x + prev_min_point.y) - dependency_value, 0.0);
+    }
 
-    // Perform interpolation
-    double s_min = linearInterpolation(dependency_value, p1_min.x, p1_min.y, p2_min.x, p2_min.y);
-    double s_max = linearInterpolation(dependency_value, p1_max.x, p1_max.y, p2_max.x, p2_max.y);
+    // 🧠 Calculate interpolated maximum energy (s_max)
+    double s_max = linearInterpolation(dependency_value, prev_max_point.x, prev_max_point.y, next_max_point.x, next_max_point.y);
 
-    // Ensure s_min <= s_max (due to floating point errors, might sometimes flip)
+    // 🧠Ensure s_min <= s_max due to potential floating point inaccuracies
     if (s_min > s_max) {
         swap(s_min, s_max);
     }
-    
-    // There's a specific condition `if (next_min.y == 0.0)` in your original code.
-    // This is from `generate_polygon` where it checks `next_min_prev` and `next_max_prev`
-    // and limits `min_current_energy` and `max_current_energy` by `adjusted_charging_power`.
-    // This `if (next_min.y == 0.0)` block is very specific to how the original polygon was generated.
-    // Replicating it for interpolation without fully understanding its purpose for aggregated polygons
-    // might be incorrect. It essentially says if the *next* polygon's min-energy point was zero,
-    // then the current min energy should be `max((prev_min.x + prev_min.y) - dependency_value, 0.0)`.
-    // This looks like a specific constraint related to remaining energy needed, not a general interpolation.
-    // If it's a specific constraint, it should be applied *after* general interpolation,
-    // and its application might be specific to non-padding polygons.
-    // For now, I'll remove it from the general interpolation logic, as it complicates it.
-    // If this logic is critical for all polygons, it needs to be carefully integrated.
 
-    return { Point(dependency_value, s_min), Point(dependency_value, s_max) };
+    return {Point(dependency_value, s_min), Point(dependency_value, s_max)};
 }
 
 /** 🔹 Function: Aggregates two DFOs into one, handling misaligned start times by padding with temporary polygons. */
