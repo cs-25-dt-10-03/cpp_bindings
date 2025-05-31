@@ -13,6 +13,7 @@ vector<DependencyPolygon> DFO_Aggregation::createStartPadding(int num_padding, i
 
     for (int i = 0; i < num_padding; i++) {
         DependencyPolygon polygon(0.0, 0.0, numsamples);
+        polygon.charging_power = 0.0; // Set charging power to zero for padding polygons
         polygon.points.emplace_back(0.0, 0.0);
         polygon.points.emplace_back(0.0, 0.0);  // Two (0,0) points
         start_polygons.push_back(polygon);
@@ -40,6 +41,7 @@ vector<DependencyPolygon> DFO_Aggregation::createEndPadding(const DFO& dfo, int 
 
     for (int i = 0; i < num_padding; i++) {
         DependencyPolygon polygon(min_total_energy, max_total_energy, numsamples);
+        polygon.charging_power = 0.0; // Set charging power to zero for padding polygons
         // Four points (min_total_energy, 0) and (max_total_energy, 0) to create a rectangle representing the polygon
         polygon.points.emplace_back(min_total_energy, 0.0);
         polygon.points.emplace_back(min_total_energy, 0.0);
