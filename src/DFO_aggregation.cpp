@@ -14,6 +14,8 @@ vector<DependencyPolygon> DFO_Aggregation::createStartPadding(int num_padding, i
     for (int i = 0; i < num_padding; i++) {
         DependencyPolygon polygon(0.0, 0.0, numsamples);
         polygon.charging_power = 0.0; // Set charging power to zero for padding polygons
+        polygon.min_prev_energy = 0.0; // Set min_prev_energy to zero
+        polygon.max_prev_energy = 0.0; // Set max_prev_energy to zero
         polygon.points.emplace_back(0.0, 0.0);
         polygon.points.emplace_back(0.0, 0.0);  // Two (0,0) points
         start_polygons.push_back(polygon);
@@ -42,6 +44,8 @@ vector<DependencyPolygon> DFO_Aggregation::createEndPadding(const DFO& dfo, int 
     for (int i = 0; i < num_padding; i++) {
         DependencyPolygon polygon(min_total_energy, max_total_energy, numsamples);
         polygon.charging_power = 0.0; // Set charging power to zero for padding polygons
+        polygon.min_prev_energy = min_total_energy; // Set min_prev_energy to min_total_energy
+        polygon.max_prev_energy = max_total_energy; // Set max_prev_energy to max_total_energy
         // Four points (min_total_energy, 0) and (max_total_energy, 0) to create a rectangle representing the polygon
         polygon.points.emplace_back(min_total_energy, 0.0);
         polygon.points.emplace_back(min_total_energy, 0.0);
@@ -188,6 +192,8 @@ DFO DFO_Aggregation::agg2to1(const DFO& dfo1, const DFO& dfo2, int numsamples) {
 
         DependencyPolygon aggregated_polygon(aggregated_min_prev, aggregated_max_prev, numsamples);
         aggregated_polygon.charging_power = aggregated_charging_power;
+        aggregated_polygon.min_prev_energy = aggregated_min_prev;
+        aggregated_polygon.max_prev_energy = aggregated_max_prev;
 
         if (polygon1.points.size() == 2 && polygon2.points.size() == 2) {
             // Special case: only two points (e.g., first timestep with min/max at 0)
