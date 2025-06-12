@@ -65,7 +65,7 @@ Flexoffer balance_alignment_aggregate(const vector<Flexoffer>& flex_offers, int 
     int base_index = get_least_flexible_index(flex_offers, used);
     used[base_index] = true;
     Flexoffer agg = flex_offers[base_index];
-    double currentAbsBal = abs_balance(agg);
+    double currentAbsBal = compute_total_flex(agg);
 
     // Iteratively aggregate the next least flexible offer.
     for (size_t count = 1; count < n; count++) {
@@ -98,7 +98,7 @@ Flexoffer balance_alignment_aggregate(const vector<Flexoffer>& flex_offers, int 
         Flexoffer candidateAgg = agg; // temporary candidate aggregation
         for (int off : candidate_offsets) {
             Flexoffer tempAgg = aggregate_two(agg, cand, off);
-            double tempBal = abs_balance(tempAgg);
+            double tempBal = compute_total_flex(tempAgg);
             if (tempBal < bestCandidateBalance) {
                 bestCandidateBalance = tempBal;
                 bestOffset = off;
