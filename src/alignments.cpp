@@ -123,7 +123,7 @@ inline double balance_cost(const Flexoffer& a, const Flexoffer& b, int offset) {
 
 // Find the best offset to merge two FlexOffers, minimizing balance
 Flexoffer merge_best_offset(const Flexoffer& a, const Flexoffer& b, int num_candidates) {
-    int lowerOffset = max(0, static_cast<int>((b.get_est() - a.get_est()) / TIME_RESOLUTION));
+    int lowerOffset = static_cast<int>((b.get_est() - a.get_est()) / TIME_RESOLUTION);
     int upperOffset = static_cast<int>((b.get_lst() - a.get_est()) / TIME_RESOLUTION);
 
     vector<int> offsets;
